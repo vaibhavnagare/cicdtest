@@ -36,7 +36,7 @@ List<String> getChangedFilesList(){
     def changedFiles = []
     for ( changeLogSet in currentBuild.changeSets){
         for (entry in changeLogSet.getItems()){
-            println("GIT CommitMessage: " + entry)
+            println("GIT CommitMessage: " + entry.affectedPaths)
             changedFiles.addAll(entry.affectedPaths)
         }
     }
