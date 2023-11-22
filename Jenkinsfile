@@ -22,7 +22,7 @@ pipeline {
                         def pullRequestInfo = github(apiUrl: "/repos/${env.REPO_OWNER}/${env.REPO_NAME}/pulls/${env.PULL_REQUEST_NUMBER}",
                                                  credentialId: env.GITHUB_TOKEN,
                                                  httpMethod: 'GET')
-                       println(pullRequestInfo.getResponseCode())
+                       println(pullRequestInfo)
 
                       /*   println "Got the data"
                         if (response.status == 200) {
