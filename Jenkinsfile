@@ -22,9 +22,10 @@ pipeline {
 
                         // Get the changed files in the pull request
                         def changedFiles = gitHubContext.getPullRequestFiles(owner: ownerName, repository: repoName, number: prNumber)
-                        println("I am here")
+                        echo 'I am here'
                         // Print the file paths
                         for (file in changedFiles) {
+                        echo 'Vaibhav'
                             println("Changed file: ${file.filename}")
                         }
                     }
