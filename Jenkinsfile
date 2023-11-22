@@ -11,8 +11,10 @@ pipeline {
                         String gitCommitId = getGitcommitID()
                         println("GIT CommitID: " + gitCommitID)
 
+/*
                         String gitCommitAuthorName = getAuthorName()
                         println("GIT CommitAuthorName: " + gitCommitAuthorName)
+ */
 
                         String gitCommitMessage = getCommitMessage()
                         println("GIT CommitMessage: " + gitCommitMessage)
