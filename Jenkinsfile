@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Verify') {
             steps {
-                FILE = getPRChangelog();
+                FILE = getPRChangelog()
                 for f in $FILES
                  echo 'Hello World >> $f'
                 do
