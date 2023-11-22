@@ -20,7 +20,7 @@ pipeline {
 
                         def apiUrl = "${env.GITHUB_API_URL}/repos/${env.REPO_OWNER}/${env.REPO_NAME}/pulls/${pullRequestNumber}"
                         def pullRequestInfo = github(apiUrl: "/repos/${env.REPO_OWNER}/${env.REPO_NAME}/pulls/${env.PULL_REQUEST_NUMBER}",
-                                                 credentialId: 'YOUR_GITHUB_CREDENTIAL_ID',
+                                                 credentialId: env.GITHUB_TOKEN,
                                                  httpMethod: 'GET')
                        println(pullRequestInfo.getResponseCode())
 
