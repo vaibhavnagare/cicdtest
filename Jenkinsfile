@@ -4,10 +4,7 @@ pipeline {
     stages {
         stage('Verify') {
             steps {
-                currentBranch=`git rev-parse --abbrev-ref HEAD`
-
-                #Get all files modified in git                                                                                                                                \
-
+                currentBranch=`git rev-parse --abbrev-ref HEAD`                                                                                                                          \
                 FILES=`git diff-tree --no-commit-id --name-only HEAD -r`
 
                 for f in $FILES
