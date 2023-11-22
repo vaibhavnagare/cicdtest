@@ -30,14 +30,7 @@ pipeline {
                     }
                 }
             }
-        }
     }
-
-     post {
-        always {
-            echo 'Always'
-        }
-      }
 }
 
 /**
