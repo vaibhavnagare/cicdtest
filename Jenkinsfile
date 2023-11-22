@@ -10,10 +10,10 @@ pipeline {
             stage('Fetch Pull Request Data') {
                 steps {
                     script {
-                        def payload = readJSON text: env.JSON_PAYLOAD // Assuming payload is available in JSON format
+                        // def payload = readJSON text: env.JSON_PAYLOAD
                         // Extract pull request number from the payload
-                        def pullRequestNumber = payload.pull_request.number
-
+                        // def pullRequestNumber = payload.pull_request.number
+                        def pullRequestNumber = 1
 
                         def apiEndpoint = "${env.GITHUB_API_URL}/repos/${env.REPO_OWNER}/${env.REPO_NAME}/pulls/${pullRequestNumber}"
                         def response = httpRequest(
