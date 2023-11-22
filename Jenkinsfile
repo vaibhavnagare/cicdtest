@@ -1,12 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        GITHUB_API_URL = 'https://api.github.com'
-        GITHUB_TOKEN = credentials('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')
-        REPO_OWNER = 'vaibhavnagare'
-        REPO_NAME = 'cicdtest'
-    }
 
      stages {
             stage('Fetch Pull Request Data') {
