@@ -1,3 +1,5 @@
+@Library('HTTPBuilder')
+
 pipeline {
     agent any
     environment {
