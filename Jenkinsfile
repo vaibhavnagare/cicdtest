@@ -16,7 +16,8 @@ pipeline {
                         def curlCmd = "curl -H 'Authorization: token ${GITHUB_TOKEN}' -H 'Accept: application/vnd.github.v3+json' ${apiUrl}"
                         def response = sh(script: curlCmd, returnStdout: true).trim()
 
-                        def pullRequestData = readJSON(text: response)
+                         echo "Pull Request Data: ${response}"
+                        def pullRequestData = readJSON text: response
                         echo "Pull Request Data:"
                         echo "Title: ${pullRequestData.title}"
                         echo "State: ${pullRequestData.state}"
