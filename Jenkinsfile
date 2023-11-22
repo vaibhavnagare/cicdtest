@@ -57,3 +57,13 @@ def getPRChangelog() {
             returnStdout: true
     ).split('\n')
 }
+
+def getPullRequestNumberFromURL(url) {
+    // Extract the pull request number from the URL
+    def matcher = (url =~ /pull\/(\d+)/)
+    if (matcher.matches()) {
+        return matcher[0][1].toInteger()
+    } else {
+        error "Could not extract pull request number from URL: ${url}"
+    }
+}
