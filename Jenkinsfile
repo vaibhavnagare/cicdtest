@@ -18,13 +18,7 @@ pipeline {
                         // def pullRequestNumber = payload.pull_request.number
                         def pullRequestNumber = 1
                         println "Starting"
-                        def pullRequestData = githubApi(
-                            url: "${env.GITHUB_API_URL}/repos/${env.REPO_OWNER}/${env.REPO_NAME}/pulls/${pullRequestNumber}",
-                            credentialsId: env.GITHUB_TOKEN,
-                            method: 'GET'
-                        )
 
-                         println "Got the data"
                     }
                 }
             }
