@@ -1,10 +1,9 @@
-@Library('HTTPBuilder')
 
 pipeline {
     agent any
     environment {
         GITHUB_API_URL = 'https://api.github.com'
-        GITHUB_TOKEN ='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'
+        GITHUB_TOKEN = credentials('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')
         REPO_OWNER = 'vaibhavnagare'
         REPO_NAME = 'cicdtest'
     }
@@ -17,19 +16,18 @@ pipeline {
                         // def pullRequestNumber = payload.pull_request.number
                         def pullRequestNumber = 1
                         println "Starting"
-                        def apiEndpoint = "${env.GITHUB_API_URL}/repos/${env.REPO_OWNER}/${env.REPO_NAME}/pulls/${pullRequestNumber}"
-                        def response = httpRequest(
-                            url: apiEndpoint,
-                            authentication: env.GITHUB_TOKEN,
-                            httpMode: 'GET'
+                        def pullRequestData = githubApi(
+                            url: "${env.GITHUB_API_URL}/repos/${env.REPO_OWNER}/${env.REPO_NAME}/pulls/${pullRequestNumber}",
+                            credentialsId: env.GITHUB_TOKEN,
+                            method: 'GET'
                         )
 
                          println "Got the data"
 
-                        if (response.status == 200) {
+                        if (pullRequestData.getResponseCode() == 200) {
                             println "Satus is 200"
-                            def pullRequestData = readJSON text: response.content
-                            for (entry in pullRequestData) {
+                            def pullRequestInfo = pullRequestData.getData()
+                            for (entry in pullRequestInfo) {
                                 if (entry.patch..contains('system.out')) {
                                     println 'sysout is present in the file >> $entry.filename'
                                 }
