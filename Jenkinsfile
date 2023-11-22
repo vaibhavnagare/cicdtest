@@ -13,7 +13,7 @@ pipeline {
                 steps {
                     script {
                         def apiUrl = "https://api.github.com/repos/${env.REPO_OWNER}/${env.REPO_NAME}/pulls/1"
-                        def curlCmd = "curl -H 'Authorization: token ${GITHUB_TOKEN}' -H 'Accept: application/vnd.github.v3+json' ${apiUrl}"
+                        def curlCmd = "curl -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer ${GITHUB_TOKEN}' ${apiUrl}"
                         def response = sh(script: curlCmd, returnStdout: true).trim()
 
                          echo "Pull Request Data: ${response}"
