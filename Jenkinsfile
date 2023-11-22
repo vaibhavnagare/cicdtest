@@ -17,7 +17,7 @@ pipeline {
                         echo 'I am here 3'
                         // Get the pull request number from the environment variable
 
-                        echo 'I am here 3.1 $env.CHANGE_ID'
+                        echo 'I am here 3.1 env.CHANGE_ID'
                         def prNumber = env.CHANGE_ID.toInteger()
                         def gitHubContext = github
 
