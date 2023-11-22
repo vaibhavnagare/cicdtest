@@ -6,7 +6,9 @@ pipeline {
                 steps {
                     script {
                         List<String> changes = getChangedFilesList()
-                        println ("Changed file list: " + changes)
+                        for (filePath in changes){
+                            println ("Changed file list: " + filePath)
+                        }
 
                         String gitCommitId = getGitcommitID()
                         println("GIT CommitID: " + gitCommitID)
