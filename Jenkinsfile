@@ -12,7 +12,8 @@ pipeline {
                         def gitParts = gitUrl.tokenize(':')[1].tokenize('/')
                         def ownerName = gitParts[0]
                         def repoName = gitParts[1].replace('.git', '')
-
+                        println("CHANGE_URL: ${env.CHANGE_URL}")
+                        println("CHANGE_URL: ${env.CHANGE_URL_1}")
                         // Extract pull request number from CHANGE_URL or CHANGE_URL_1
                         def prNumber = getPullRequestNumberFromURL(env.CHANGE_URL ?: env.CHANGE_URL_1)
 
