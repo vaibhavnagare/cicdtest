@@ -12,11 +12,9 @@ pipeline {
             stage('Fetch Pull Request Data') {
                 steps {
                     script {
-                        // def payload = readJSON text: env.JSON_PAYLOAD
-                        // Extract pull request number from the payload
-                        // def pullRequestNumber = payload.pull_request.number
-                        //def pullRequestNumber = 1
-                        println "Starting"
+
+
+                         println "Got the data"
 
                     }
                 }
