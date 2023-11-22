@@ -14,7 +14,7 @@ pipeline {
                     script {
 
 
-                         println "Got the data"
+                         println("GIT CommitID: ")
 
                     }
                 }
