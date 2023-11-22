@@ -7,6 +7,7 @@ pipeline {
         REPO_OWNER = 'vaibhavnagare'
         REPO_NAME = 'cicdtest'
     }
+
      stages {
             stage('Fetch Pull Request Data') {
                 steps {
