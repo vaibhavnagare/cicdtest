@@ -4,7 +4,12 @@ pipeline {
     stages {
         stage('Verify') {
             steps {
-                FILE = getPRChangelog()
+                currentBranch=`git rev-parse --abbrev-ref HEAD`
+
+                #Get all files modified in git                                                                                                                                \
+
+                FILES=`git diff-tree --no-commit-id --name-only HEAD -r`
+
                 for f in $FILES
                  echo 'Hello World >> $f'
                 do
