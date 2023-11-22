@@ -11,18 +11,16 @@ pipeline {
      stages {
             stage('Fetch Pull Request Data') {
                 steps {
-                    withCredentials([string(credentialsId: 'YOUR_GITHUB_CREDENTIAL_ID', variable: 'GITHUB_TOKEN')]) {
-                        script {
-                            def apiUrl = "https://api.github.com/repos/${env.REPO_OWNER}/${env.REPO_NAME}/pulls/1"
-                            def curlCmd = "curl -H 'Authorization: token ${GITHUB_TOKEN}' -H 'Accept: application/vnd.github.v3+json' ${apiUrl}"
-                            def response = sh(script: curlCmd, returnStdout: true).trim()
+                    script {
+                        def apiUrl = "https://api.github.com/repos/${env.REPO_OWNER}/${env.REPO_NAME}/pulls/1"
+                        def curlCmd = "curl -H 'Authorization: token ${GITHUB_TOKEN}' -H 'Accept: application/vnd.github.v3+json' ${apiUrl}"
+                        def response = sh(script: curlCmd, returnStdout: true).trim()
 
-                            def pullRequestData = readJSON(text: response)
-                            echo "Pull Request Data:"
-                            echo "Title: ${pullRequestData.title}"
-                            echo "State: ${pullRequestData.state}"
-                            // Extract other relevant pull request information as needed
-                        }
+                        def pullRequestData = readJSON(text: response)
+                        echo "Pull Request Data:"
+                        echo "Title: ${pullRequestData.title}"
+                        echo "State: ${pullRequestData.state}"
+                        // Extract other relevant pull request information as needed
                     }
                 }
             }
