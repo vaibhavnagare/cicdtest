@@ -11,41 +11,18 @@ pipeline {
      stages {
             stage('Fetch Pull Request Data') {
                 steps {
-                    script {
-                        // def payload = readJSON text: env.JSON_PAYLOAD
-                        // Extract pull request number from the payload
-                        // def pullRequestNumber = payload.pull_request.number
-                        def pullRequestNumber = 1
-                        println "Starting"
+                    withCredentials([string(credentialsId: 'YOUR_GITHUB_CREDENTIAL_ID', variable: 'GITHUB_TOKEN')]) {
+                        script {
+                            def apiUrl = "https://api.github.com/repos/${env.REPO_OWNER}/${env.REPO_NAME}/pulls/1"
+                            def curlCmd = "curl -H 'Authorization: token ${GITHUB_TOKEN}' -H 'Accept: application/vnd.github.v3+json' ${apiUrl}"
+                            def response = sh(script: curlCmd, returnStdout: true).trim()
 
-                        def apiUrl = "${env.GITHUB_API_URL}/repos/${env.REPO_OWNER}/${env.REPO_NAME}/pulls/${pullRequestNumber}"
-                        def pullRequestInfo = github(apiUrl: "/repos/${env.REPO_OWNER}/${env.REPO_NAME}/pulls/${env.PULL_REQUEST_NUMBER}",
-                                                 credentialId: env.GITHUB_TOKEN,
-                                                 httpMethod: 'GET')
-                       println(pullRequestInfo)
-
-                      /*   println "Got the data"
-                        if (response.status == 200) {
-                            println "Got the data with status"
-                            def pullRequestInfo = readJSON text: response.content
-                            for (entry in pullRequestInfo) {
-                                if (entry.patch..contains('system.out')) {
-                                    println 'sysout is present in the file >> $entry.filename'
-                                }
-                            }
-                        } */
-/*                         if (pullRequestData.getResponseCode() == 200) {
-                            println "Satus is 200"
-                            def pullRequestInfo = pullRequestData.getData()
-                            for (entry in pullRequestInfo) {
-                                if (entry.patch..contains('system.out')) {
-                                    println 'sysout is present in the file >> $entry.filename'
-                                }
-                            }
-                            println "Pull Request Data:"
-                            println "Title: ${pullRequestData.title}"
-                            println "State: ${pullRequestData.state}"
-                        } */
+                            def pullRequestData = readJSON(text: response)
+                            echo "Pull Request Data:"
+                            echo "Title: ${pullRequestData.title}"
+                            echo "State: ${pullRequestData.state}"
+                            // Extract other relevant pull request information as needed
+                        }
                     }
                 }
             }
