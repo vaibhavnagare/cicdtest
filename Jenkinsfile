@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         GITHUB_API_URL = 'https://api.github.com'
-        GITHUB_TOKEN = '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'
+        GITHUB_TOKEN = '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'.bytes.encodeBase64().toString()
         REPO_OWNER = 'vaibhavnagare'
         REPO_NAME = 'cicdtest'
     }
@@ -17,24 +17,14 @@ pipeline {
                         // def pullRequestNumber = payload.pull_request.number
                         def pullRequestNumber = 1
                         println "Starting"
-
-                        def apiUrl = "${env.GITHUB_API_URL}/repos/${env.REPO_OWNER}/${env.REPO_NAME}/pulls/${pullRequestNumber}"
-                        def response = httpRequest(
-                            url: apiUrl,
-                            authentication: env.GITHUB_TOKEN,
-                            httpMode: 'GET'
-                        )
-
+                        def response = getPrBody()
                         println "Got the data"
-                        if (response.status == 200) {
-                            println "Got the data with status"
-                            def pullRequestInfo = readJSON text: response.content
-                            for (entry in pullRequestInfo) {
-                                if (entry.patch..contains('system.out')) {
-                                    println 'sysout is present in the file >> $entry.filename'
-                                }
+                        for (entry in response) {
+                            if (entry.patch..contains('system.out')) {
+                                println 'sysout is present in the file >> $entry.filename'
                             }
                         }
+
 /*                         if (pullRequestData.getResponseCode() == 200) {
                             println "Satus is 200"
                             def pullRequestInfo = pullRequestData.getData()
@@ -59,6 +49,14 @@ pipeline {
       }
 }
 
+def getPrBody(String githubUsername, String githubToken, String repo, String id) {
+  def apiUrl = "${env.GITHUB_API_URL}/repos/${env.REPO_OWNER}/${env.REPO_NAME}/pulls/1"
+  def text = apiUrl.toURL().getText(requestProperties: ['Authorization': "token ${env.GITHUB_TOKEN}"])
+  def json = new JsonSlurper().parseText(text)
+  def bodyText = json.body
+
+  return bodyText
+}
 
 @NonCPS
 List<String> getChangedFilesList(){
