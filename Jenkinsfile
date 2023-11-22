@@ -7,18 +7,20 @@ pipeline {
                     // Get the Git URL of the repository
                     def gitUrl = sh(returnStdout: true, script: 'git config --get remote.origin.url').trim()
 
-                    // Extract repository owner's name from the Git URL
-                    def ownerName = gitUrl.tokenize(':')[1].tokenize('/')[0]
+                    // Extract repository owner's name and repository name from the Git URL
+                    def gitParts = gitUrl.tokenize(':')[1].tokenize('/')
+                    def ownerName = gitParts[0]
+                    def repoName = gitParts[1].replace('.git', '')
 
                     // Get the pull request number from the environment variable
                     def prNumber = env.CHANGE_ID.toInteger()
 
                     def gitHubContext = github
 
-                    def pullRequest = gitHubContext.getPullRequest(owner: ownerName, repository: 'repoName', number: prNumber)
+                    def pullRequest = gitHubContext.getPullRequest(owner: ownerName, repository: repoName, number: prNumber)
 
                     // Get the changed files in the pull request
-                    def changedFiles = gitHubContext.getPullRequestFiles(owner: ownerName, repository: 'repoName', number: prNumber)
+                    def changedFiles = gitHubContext.getPullRequestFiles(owner: ownerName, repository: repoName, number: prNumber)
 
                     // Print the file paths
                     for (file in changedFiles) {
