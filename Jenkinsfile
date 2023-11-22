@@ -45,6 +45,13 @@ pipeline {
       }
 }
 
+def isPullRequest() {
+    try {
+        return pullRequest != null
+    } catch(MissingPropertyException e) {
+        return false
+    }
+}
 /**
  * Compares the current branch and target branch and extract the changed files.
  *
