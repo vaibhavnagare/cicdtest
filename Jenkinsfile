@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     stages {
-        stage('Verify') {
+        stage('Retrieve PR File Paths') {
             steps {                                                                                                                      \
                     // Get the Git URL of the repository
                     def gitUrl = sh(returnStdout: true, script: 'git config --get remote.origin.url').trim()
