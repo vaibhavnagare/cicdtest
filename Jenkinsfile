@@ -3,10 +3,8 @@ pipeline {
 
     stages {
         stage('Verify') {
-            steps {
-                currentBranch=`git rev-parse --abbrev-ref HEAD`                                                                                                                          \
-                FILES=`git diff-tree --no-commit-id --name-only HEAD -r`
-
+            steps {                                                                                                                      \
+                FILES=getPRChangelog()
                 for f in $FILES
                  echo 'Hello World >> $f'
                 do
