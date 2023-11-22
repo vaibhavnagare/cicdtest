@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         GITHUB_API_URL = 'https://api.github.com'
-        GITHUB_TOKEN = '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'
+        GITHUB_TOKEN = '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'
         REPO_OWNER = 'vaibhavnagare'
         REPO_NAME = 'cicdtest'
     }
@@ -12,7 +12,7 @@ pipeline {
             stage('Fetch Pull Request Data') {
                 steps {
                     script {
-                        def apiUrl = "https://api.github.com/repos/${env.REPO_OWNER}/${env.REPO_NAME}/pulls/1"
+                        def apiUrl = "https://api.github.com/repos/${env.REPO_OWNER}/${env.REPO_NAME}/pulls/1/files"
                         def curlCmd = "curl -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer ${GITHUB_TOKEN}' ${apiUrl}"
                         def response = sh(script: curlCmd, returnStdout: true).trim()
 
