@@ -1,6 +1,12 @@
 pipeline {
     agent any
 
+    environment {
+        GITHUB_API_URL = 'https://api.github.com'
+
+        REPO_OWNER = 'vaibhavnagare'
+        REPO_NAME = 'cicdtest'
+    }
 
      stages {
             stage('Fetch Pull Request Data') {
