@@ -5,7 +5,7 @@ pipeline {
             stage('Retrieve PR File Paths') {
                 steps {
                     script {
-                        List<String> changes = getPRChangelog()
+                        List<String> changes = getChangedFilesList()
                         for (filePath in changes){
                             println ("Changed file list: " + filePath)
                         }
@@ -27,17 +27,6 @@ pipeline {
       }
 }
 
-/**
- * Compares the current branch and target branch and extract the changed files.
- *
- * @return the PR changed files.
- */
-def getPRChangelog() {
-    return sh(
-            script: "git --no-pager diff origin/${params.target} --name-only",
-            returnStdout: true
-    ).split('\n')
-}
 
 @NonCPS
 List<String> getChangedFilesList(){
