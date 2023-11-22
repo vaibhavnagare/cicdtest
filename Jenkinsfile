@@ -14,7 +14,7 @@ pipeline {
                         // Extract pull request number from the payload
                         // def pullRequestNumber = payload.pull_request.number
                         def pullRequestNumber = 1
-
+                        println "Starting"
                         def apiEndpoint = "${env.GITHUB_API_URL}/repos/${env.REPO_OWNER}/${env.REPO_NAME}/pulls/${pullRequestNumber}"
                         def response = httpRequest(
                             url: apiEndpoint,
@@ -22,11 +22,14 @@ pipeline {
                             httpMode: 'GET'
                         )
 
+                         println "Got the data"
+
                         if (response.status == 200) {
+                            println "Satus is 200"
                             def pullRequestData = readJSON text: response.content
                             for (entry in pullRequestData) {
                                 if (entry.patch..contains('system.out')) {
-                                    echo 'sysout is present in the file >> $entry.filename'
+                                    println 'sysout is present in the file >> $entry.filename'
                                 }
                             }
                             println "Pull Request Data:"
