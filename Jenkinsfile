@@ -19,10 +19,10 @@ pipeline {
                         println "Starting"
 
                         def apiUrl = "${env.GITHUB_API_URL}/repos/${env.REPO_OWNER}/${env.REPO_NAME}/pulls/${pullRequestNumber}"
-                        def req = new URL(apiUrl).openConnection();
-                        req.setRequestProperty("Accept", "application/vnd.github+json")
-                        req.setRequestProperty("Authorization", "Bearer " + env.GITHUB_TOKEN)
-                        println(req.getResponseCode())
+                        def pullRequestInfo = github(apiUrl: "/repos/${env.REPO_OWNER}/${env.REPO_NAME}/pulls/${env.PULL_REQUEST_NUMBER}",
+                                                 credentialId: 'YOUR_GITHUB_CREDENTIAL_ID',
+                                                 httpMethod: 'GET')
+                       println(pullRequestInfo.getResponseCode())
 
                       /*   println "Got the data"
                         if (response.status == 200) {
