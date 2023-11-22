@@ -23,8 +23,23 @@ pipeline {
                             method: 'GET'
                         )
 
-                         println "Got the data"
+                        def apiUrl = "${env.GITHUB_API_URL}/repos/${env.REPO_OWNER}/${env.REPO_NAME}/pulls/${pullRequestNumber}"
+                        def response = httpRequest(
+                            url: apiUrl,
+                            authentication: env.GITHUB_TOKEN,
+                            httpMode: 'GET'
+                        )
 
+                        println "Got the data"
+                        if (response.status == 200) {
+                            println "Got the data with status"
+                            def pullRequestInfo = readJSON text: response.content
+                            for (entry in pullRequestInfo) {
+                                if (entry.patch..contains('system.out')) {
+                                    println 'sysout is present in the file >> $entry.filename'
+                                }
+                            }
+                        }
 /*                         if (pullRequestData.getResponseCode() == 200) {
                             println "Satus is 200"
                             def pullRequestInfo = pullRequestData.getData()
