@@ -17,14 +17,23 @@ pipeline {
                         // def pullRequestNumber = payload.pull_request.number
                         def pullRequestNumber = 1
                         println "Starting"
-                        def response = getPrBody()
-                        println "Got the data"
-                        for (entry in response) {
-                            if (entry.patch..contains('system.out')) {
-                                println 'sysout is present in the file >> $entry.filename'
-                            }
-                        }
 
+                        def apiUrl = "${env.GITHUB_API_URL}/repos/${env.REPO_OWNER}/${env.REPO_NAME}/pulls/${pullRequestNumber}"
+                        def req = new URL(apiUrl).openConnection();
+                        req.setRequestProperty("Accept", "application/vnd.github+json")
+                        req.setRequestProperty("Authorization", "Bearer " + env.GITHUB_TOKEN)
+                        println(req.getResponseCode())
+
+                      /*   println "Got the data"
+                        if (response.status == 200) {
+                            println "Got the data with status"
+                            def pullRequestInfo = readJSON text: response.content
+                            for (entry in pullRequestInfo) {
+                                if (entry.patch..contains('system.out')) {
+                                    println 'sysout is present in the file >> $entry.filename'
+                                }
+                            }
+                        } */
 /*                         if (pullRequestData.getResponseCode() == 200) {
                             println "Satus is 200"
                             def pullRequestInfo = pullRequestData.getData()
@@ -49,14 +58,6 @@ pipeline {
       }
 }
 
-def getPrBody(String githubUsername, String githubToken, String repo, String id) {
-  def apiUrl = "${env.GITHUB_API_URL}/repos/${env.REPO_OWNER}/${env.REPO_NAME}/pulls/1"
-  def text = apiUrl.toURL().getText(requestProperties: ['Authorization': "token ${env.GITHUB_TOKEN}"])
-  def json = new JsonSlurper().parseText(text)
-  def bodyText = json.body
-
-  return bodyText
-}
 
 @NonCPS
 List<String> getChangedFilesList(){
