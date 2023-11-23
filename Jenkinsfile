@@ -1,13 +1,5 @@
 pipeline {
     agent any
-
-    environment {
-        GITHUB_API_URL = 'https://api.github.com'
-        GITHUB_TOKEN = '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'
-        REPO_OWNER = 'vaibhavnagare'
-        REPO_NAME = 'cicdtest'
-    }
-
      stages {
             stage('Fetch Pull Request Data') {
                 steps {
@@ -34,39 +26,4 @@ pipeline {
         }
       }
 }
-
-@NonCPS
-List<String> getChangedFilesList(){
-    def changedFiles = []
-    for (changeLogSet in currentBuild.changeSets) {
-        for (entry in changeLogSet.getItems()){
-            changedFiles.addAll(entry.affectedPaths)
-        }
-    }
-    return changedFiles
-}
-
-@NonCPS
-String getGitcommitID(){
-    gitCommitID = " "
-    for ( changeLogSet in currentBuild.changeSets){
-        for (entry in changeLogSet.getItems()){
-            gitCommitID = entry.commitId
-        }
-    }
-    return gitCommitID
-}
-
-@NonCPS
-String getCommitMessage(){
-    commitMessage = " "
-    for ( changeLogSet in currentBuild.changeSets){
-        for (entry in changeLogSet.getItems()){
-            commitMessage = entry.msg
-        }
-    }
-    return commitMessage
-}
-
-
 
