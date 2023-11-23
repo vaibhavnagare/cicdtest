@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         GITHUB_API_URL = 'https://api.github.com'
-        GITHUB_TOKEN = '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'
+        GITHUB_TOKEN = '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'
         REPO_OWNER = 'vaibhavnagare'
         REPO_NAME = 'cicdtest'
     }
@@ -11,21 +11,41 @@ pipeline {
      stages {
             stage('Fetch Pull Request Data') {
                 steps {
-                    def apiUrl = "${env.GITHUB_API_URL}/repos/${env.REPO_OWNER}/${env.REPO_NAME}/pulls/1/files"
-                    def response = httpRequest(
-                        url: apiUrl,
-                        authentication: env.GITHUB_TOKEN,
-                        httpMode: 'GET'
-                    )
+                    script {
+                        // def payload = readJSON text: env.JSON_PAYLOAD
+                        // Extract pull request number from the payload
+                        // def pullRequestNumber = payload.pull_request.number
+                        def pullRequestNumber = 1
+                        println "Starting"
 
-                    if (response.status == 200) {
-                        def modifiedFiles = readJSON text: response.content
-                        echo "Modified Files in Pull Request:"
-                        modifiedFiles.each { file ->
-                            echo file.filename
-                        }
-                    } else {
-                        echo "Failed to fetch modified files. Status code: ${response.status}"
+                        def apiUrl = "${env.GITHUB_API_URL}/repos/${env.REPO_OWNER}/${env.REPO_NAME}/pulls/${pullRequestNumber}"
+                        def pullRequestInfo = github(apiUrl: "/repos/${env.REPO_OWNER}/${env.REPO_NAME}/pulls/${env.PULL_REQUEST_NUMBER}",
+                                                 credentialId: env.GITHUB_TOKEN,
+                                                 httpMethod: 'GET')
+                       println(pullRequestInfo.getResponseCode())
+
+                      /*   println "Got the data"
+                        if (response.status == 200) {
+                            println "Got the data with status"
+                            def pullRequestInfo = readJSON text: response.content
+                            for (entry in pullRequestInfo) {
+                                if (entry.patch..contains('system.out')) {
+                                    println 'sysout is present in the file >> $entry.filename'
+                                }
+                            }
+                        } */
+/*                         if (pullRequestData.getResponseCode() == 200) {
+                            println "Satus is 200"
+                            def pullRequestInfo = pullRequestData.getData()
+                            for (entry in pullRequestInfo) {
+                                if (entry.patch..contains('system.out')) {
+                                    println 'sysout is present in the file >> $entry.filename'
+                                }
+                            }
+                            println "Pull Request Data:"
+                            println "Title: ${pullRequestData.title}"
+                            println "State: ${pullRequestData.state}"
+                        } */
                     }
                 }
             }
@@ -37,6 +57,7 @@ pipeline {
         }
       }
 }
+
 
 @NonCPS
 List<String> getChangedFilesList(){
@@ -70,4 +91,3 @@ String getCommitMessage(){
     }
     return commitMessage
 }
-
