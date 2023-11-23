@@ -5,8 +5,8 @@ pipeline {
                 steps {
                     script {
                     // Accessing body content (limited access)
-                    def body = httpRequest([httpMode: 'GET', url: headers.getHeader('X-Github-Event')])
-                    echo "Received Body Content:"
+
+                    echo "Received Body Content: ${env.payload}"
                     echo body.content
                     }
                 }
