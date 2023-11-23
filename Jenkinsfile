@@ -67,4 +67,3 @@ String getCommitMessage(){
     }
     return commitMessage
 }
-
