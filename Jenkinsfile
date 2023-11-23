@@ -16,13 +16,10 @@ pipeline {
                         // Extract pull request number from the payload
                         // def pullRequestNumber = payload.pull_request.number
                         def pullRequestNumber = 1
-                        println "Starting"
-
-                        def apiUrl = "${env.GITHUB_API_URL}/repos/${env.REPO_OWNER}/${env.REPO_NAME}/pulls/${pullRequestNumber}"
-                        def pullRequestInfo = github(apiUrl: "/repos/${env.REPO_OWNER}/${env.REPO_NAME}/pulls/${env.PULL_REQUEST_NUMBER}",
-                                                 credentialId: env.GITHUB_TOKEN,
-                                                 httpMethod: 'GET')
-                       println(pullRequestInfo.getResponseCode())
+                        println "CHANGE_BRANCH ${env.CHANGE_BRANCH}"
+                        println "buildStatus ${buildStatus}"
+                        println "branch ${branch}"
+                        println "BUILD_URL ${env.BUILD_URL}"
 
                       /*   println "Got the data"
                         if (response.status == 200) {
