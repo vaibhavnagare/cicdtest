@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         GITHUB_API_URL = 'https://api.github.com'
-        GITHUB_TOKEN = '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'
+        GITHUB_TOKEN = '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'
         REPO_OWNER = 'vaibhavnagare'
         REPO_NAME = 'cicdtest'
     }
