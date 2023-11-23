@@ -12,8 +12,6 @@ pipeline {
                         def pullRequestData = readJSON text: response */
 
                         echo "Pull Request Data:"
-                        echo "Title: ${pullRequestData.title}"
-                        echo "State: ${pullRequestData.state}"
                         // Extract other relevant pull request information as needed
                     }
                 }
