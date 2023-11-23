@@ -18,6 +18,7 @@ pipeline {
 
                          echo "Pull Request Data: ${response}"
                         def pullRequestData = readJSON text: response */
+
                         echo "Pull Request Data:"
                         echo "Title: ${pullRequestData.title}"
                         echo "State: ${pullRequestData.state}"
