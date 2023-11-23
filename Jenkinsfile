@@ -17,8 +17,6 @@ pipeline {
                         // def pullRequestNumber = payload.pull_request.number
                         def pullRequestNumber = 1
                         println "CHANGE_BRANCH ${env.CHANGE_BRANCH}"
-                        println "buildStatus ${buildStatus}"
-                        println "branch ${branch}"
                         println "BUILD_URL ${env.BUILD_URL}"
 
                       /*   println "Got the data"
