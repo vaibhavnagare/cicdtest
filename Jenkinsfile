@@ -4,7 +4,7 @@ pipeline {
             stage('Fetch Pull Request Data') {
                 steps {
                     script {
-                    echo "Received Body Content: ${env.payload}"
+                    echo "Received Body Content: ${payload}"
                     echo body.content
                     }
                 }
