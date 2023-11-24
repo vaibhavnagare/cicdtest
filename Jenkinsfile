@@ -12,6 +12,7 @@ pipeline {
             stage('Fetch Pull Request Data') {
                 steps {
                     script {
+                        echo 'Pulling...' + env.BRANCH_NAME
                         def branchName = sh(script: 'git branch --show-current', returnStdout: true).trim()
                         echo "Current Branch: ${branchName}"
                     }
