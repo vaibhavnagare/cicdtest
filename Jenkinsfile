@@ -12,7 +12,7 @@ pipeline {
             stage('Fetch Pull Request Data') {
                 steps {
                     script {
-                        currentBranch=`git rev-parse --abbrev-ref HEAD`
+                        def currentBranch = sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
                         echo " Branch :: ${currentBranch}"
                     }
                 }
