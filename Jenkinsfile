@@ -12,8 +12,8 @@ pipeline {
             stage('Fetch Pull Request Data') {
                 steps {
                     script {
-                        def currentBranch = sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
-                        echo " Branch :: ${currentBranch}"
+                        def branchName = sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
+                        echo "Current Branch: ${branchName}"
                     }
                 }
             }
