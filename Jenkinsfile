@@ -28,7 +28,7 @@ pipeline {
                             }
                         } else {
                             echo "Current Branch: ${branchName}"
-                            def changedFilesList = sh(script: 'git diff --name-only ${branchName}', returnStdout: true).trim()
+                           def changedFilesList = sh(script: "git diff --name-only ${branchName}", returnStdout: true).trim()
                             checkSysOuts(changedFilesList);
                         }
                     }
