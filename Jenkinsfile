@@ -44,7 +44,7 @@ pipeline {
 }
 
 def checkSysOuts(changedFilesList) {
-    for (String changedFile : changedFilesList) {
+    for (changedFile in changedFilesList) {
         echo "checking file: ${changedFile}"
     }
 }
