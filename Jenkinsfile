@@ -12,18 +12,25 @@ pipeline {
             stage('Fetch Pull Request Data') {
                 steps {
                     script {
-                    def branchName = sh(script: 'git rev-parse --abbrev-ref HEAD || git name-rev --name-only HEAD', returnStdout: true).trim()
-                    if (branchName == 'HEAD') {
-                        def commitID = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                        echo "Detached HEAD Commit: ${commitID}"
+                        def branchName = sh(script: 'git rev-parse --abbrev-ref HEAD || git name-rev --name-only HEAD', returnStdout: true).trim()
+                        if (branchName == 'HEAD') {
+                            def commitID = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                            echo "Detached HEAD Commit: ${commitID}"
 
-                        branchName = sh(script: 'git branch --contains ${commitID}', returnStdout: true).trim()
-                        if (!branchName.contains('HEAD')) {
+                            branchName = sh(script: 'git branch --contains ${commitID}', returnStdout: true).trim()
+                            if (!branchName.contains('HEAD')) {
+                                echo "Current Branch: ${branchName}"
+                                def changedFilesList = sh(script: 'git diff --name-only ${branchName}', returnStdout: true).trim()
+                                checkSysOuts(changedFilesList);
+                            } else {
+                                def changedFilesList = sh(script: 'git show --pretty="" --name-only ${commitID}', returnStdout: true).trim()
+                                checkSysOuts(changedFilesList);
+                            }
+                        } else {
                             echo "Current Branch: ${branchName}"
+                            def changedFilesList = sh(script: 'git diff --name-only ${branchName}', returnStdout: true).trim()
+                            checkSysOuts(changedFilesList);
                         }
-                    } else {
-                        echo "Current Branch: ${branchName}"
-                    }
                     }
                 }
             }
@@ -34,6 +41,12 @@ pipeline {
             echo 'Always'
         }
       }
+}
+
+def checkSysOuts(changedFilesList) {
+    for (String changedFile : changedFilesList) {
+        echo "checking file: ${changedFile}"
+    }
 }
 
 @NonCPS
