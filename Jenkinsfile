@@ -24,7 +24,8 @@ pipeline {
                                 checkSysOuts(changedFilesList);
                             } else {
                                 def changedFilesList = sh(script: 'git show --pretty="" --name-only ${commitID}', returnStdout: true).trim()
-                                checkSysOuts(changedFilesList);
+                                // Splitting the output by newline character to get individual file names
+                                checkSysOuts(fileList);
                             }
                         } else {
                             echo "Current Branch: ${branchName}"
@@ -44,8 +45,9 @@ pipeline {
 }
 
 def checkSysOuts(changedFilesList) {
-    for (changedFile in changedFilesList) {
-        echo "checking file: ${changedFile}"
+    def fileList = changedFilesList.tokenize('\n')
+    fileList.each { file ->
+        echo "File: ${file}"
     }
 }
 
