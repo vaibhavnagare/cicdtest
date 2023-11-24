@@ -16,8 +16,11 @@ pipeline {
                     if (branchName == 'HEAD') {
                         def commitID = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
                         echo "Detached HEAD Commit: ${commitID}"
+
                         branchName = sh(script: 'git branch --contains ${commitID}', returnStdout: true).trim()
-                         echo "Current Branch: ${branchName}"
+                        if (!branchName.contains()) {
+                            echo "Current Branch: ${branchName}"
+                        }
                     } else {
                         echo "Current Branch: ${branchName}"
                     }
