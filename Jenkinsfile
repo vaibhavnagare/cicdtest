@@ -12,35 +12,7 @@ pipeline {
             stage('Fetch Pull Request Data') {
                 steps {
                     script {
-                        // def payload = readJSON text: env.JSON_PAYLOAD
-                        // Extract pull request number from the payload
-                        // def pullRequestNumber = payload.pull_request.number
-                        def pullRequestNumber = 1
-                        println "CHANGE_BRANCH ${env.GIT_BRANCH}"
-                        println "BUILD_URL ${env.BUILD_URL}"
-
-                      /*   println "Got the data"
-                        if (response.status == 200) {
-                            println "Got the data with status"
-                            def pullRequestInfo = readJSON text: response.content
-                            for (entry in pullRequestInfo) {
-                                if (entry.patch..contains('system.out')) {
-                                    println 'sysout is present in the file >> $entry.filename'
-                                }
-                            }
-                        } */
-/*                         if (pullRequestData.getResponseCode() == 200) {
-                            println "Satus is 200"
-                            def pullRequestInfo = pullRequestData.getData()
-                            for (entry in pullRequestInfo) {
-                                if (entry.patch..contains('system.out')) {
-                                    println 'sysout is present in the file >> $entry.filename'
-                                }
-                            }
-                            println "Pull Request Data:"
-                            println "Title: ${pullRequestData.title}"
-                            println "State: ${pullRequestData.state}"
-                        } */
+                        echo " Branch :: ${env.CHANGE_BRANCH}"
                     }
                 }
             }
