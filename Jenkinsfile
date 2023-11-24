@@ -12,7 +12,8 @@ pipeline {
             stage('Fetch Pull Request Data') {
                 steps {
                     script {
-                        echo " Branch :: ${env.CHANGE_BRANCH}"
+                        currentBranch=`git rev-parse --abbrev-ref HEAD`
+                        echo " Branch :: ${currentBranch}"
                     }
                 }
             }
