@@ -18,7 +18,7 @@ pipeline {
                         echo "Detached HEAD Commit: ${commitID}"
 
                         branchName = sh(script: 'git branch --contains ${commitID}', returnStdout: true).trim()
-                        if (!branchName.contains()) {
+                        if (!branchName.contains('HEAD')) {
                             echo "Current Branch: ${branchName}"
                         }
                     } else {
