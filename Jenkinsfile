@@ -46,7 +46,13 @@ pipeline {
 def checkSysOuts(changedFilesList) {
     def fileList = changedFilesList.tokenize('\n')
     fileList.each { file ->
-        echo "File: ${file}"
+        def fileContent = readFile(file.trim()) // Read the content of each file
+
+        if (fileContent.contains('sysout')) {
+            echo "File ${file} contains 'sysout'"
+        } else {
+            echo "File ${file} does not contain 'sysout'"
+        }
     }
 }
 
