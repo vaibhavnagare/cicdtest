@@ -25,7 +25,6 @@ pipeline {
       }
 }
 
-
 @NonCPS
 List<String> getChangedFilesList(){
     def changedFiles = []
