@@ -12,13 +12,8 @@ pipeline {
             stage('Fetch Pull Request Data') {
                 steps {
                     script {
-                        def branchName = sh(script: 'git rev-parse --abbrev-ref HEAD || git name-rev --name-only HEAD', returnStdout: true).trim()
-                        if (branchName == 'HEAD') {
-                            branchName = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                            echo "Detached HEAD Commit: ${branchName}"
-                        } else {
-                            echo "Current Branch: ${branchName}"
-                        }
+                        def branchName = sh(script: 'git symbolic-ref --short HEAD || git rev-parse --short HEAD', returnStdout: true).trim()
+                        echo "Current Branch: ${branchName}"
                     }
                 }
             }
