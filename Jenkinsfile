@@ -29,10 +29,13 @@ pipeline {
                             }
                         } else {
                             echo "Current Branch: ${branchName}"
-                            def tempParam = sh(script: "git rev-parse --abbrev-ref HEAD", returnStdout: true).trim()
-                            def parentBranch = sh(script: "git show-branch | grep '*' | grep -v ${tempParam} | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//'", returnStdout: true).trim()
-                            def changedFilesList = sh(script: "git diff --name-only ${branchName} ${parentBranch}", returnStdout: true).trim()
+                           def changedFilesList = sh(script: "git diff --name-only ${branchName}", returnStdout: true).trim()
                             checkSysOuts(changedFilesList);
+/*                             echo "Current Branch: ${branchName}"
+                            def tempParam = sh(script: "git rev-parse --abbrev-ref HEAD", returnStdout: true).trim()
+                            def parentBranch = sh(script: "git show-branch | grep '*' | grep -v ${tempParam} | head -n1 | sed 's/.*\[\(.*\)\].*//* \1/' | sed 's/[\^~].*//* /'", returnStdout: true).trim()
+                            def changedFilesList = sh(script: "git diff --name-only ${branchName} ${parentBranch}", returnStdout: true).trim()
+                            checkSysOuts(changedFilesList); */
                         }
                     }
                 }
