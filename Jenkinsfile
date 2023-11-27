@@ -12,7 +12,7 @@ pipeline {
             stage('Fetch Pull Request Data') {
                 steps {
                     script {
-                        echo "env.BRANCH_NAME: ${env.BRANCH_NAME}"
+                        echo "env.BRANCH_NAME: ${env.number}"
                         def branchName = sh(script: 'git rev-parse --abbrev-ref HEAD || git name-rev --name-only HEAD', returnStdout: true).trim()
                         if (branchName == 'HEAD') {
                             def commitID = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
