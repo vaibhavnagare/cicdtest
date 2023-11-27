@@ -12,6 +12,8 @@ pipeline {
             stage('Fetch Pull Request Data') {
                 steps {
                     script {
+                        echo "env.BUILD_NUMBER: ${env.BUILD_NUMBER}"
+                        echo "env.BUILD_URL: ${env.BUILD_URL}"
                         echo "env.BRANCH_NAME: ${env.BRANCH_NAME}"
                         echo "env.CHANGE_URL: ${env.CHANGE_URL}"
                         echo "env.CHANGE_TARGET: ${env.CHANGE_TARGET}"
