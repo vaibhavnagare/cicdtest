@@ -21,16 +21,21 @@ pipeline {
                         echo "env.CHANGE_TARGET: ${env.CHANGE_TARGET}"
                         def diffURL = "${env.CHANGE_URL}.diff"
                         echo "diffURL ${diffURL}"
-                        def changedFiles = pullRequest.files.collect {
-                            echo "fileName ::  it.getFilename()"
-                            it.getFilename()
+                        def github = githubApi()
+
+                        // Get the current pull request
+                        def currentPull = github.getPullRequest(
+                            owner: 'ownerName',
+                            repository: 'repositoryName',
+                            number: env.CHANGE_ID
+                        )
+
+                        // Get the files associated with the pull request
+                        def pullRequestFiles = currentPull.listFiles()
+                        pullRequestFiles.each { file ->
+                            echo "File: ${file.filename}"
                         }
-                        def diff = sh(script: 'curl -s ${diffURL}', returnStdout: true).trim()
-                        if (diff.contains('System.out')) {
-                            echo "Diff contains 'sysout'"
-                        } else {
-                            echo "Diff does not contains 'sysout'"
-                        }
+
                     }
                 }
             }
