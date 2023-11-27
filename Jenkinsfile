@@ -80,13 +80,3 @@ String getGitcommitID(){
     }
     return gitCommitID
 }
-
-@NonCPS
-String getCommitMessage(){
-    commitMessage = " "
-    for ( changeLogSet in currentBuild.changeSets){
-        for (entry in changeLogSet.getItems()){
-            commitMessage = entry.msg
-        }
-    }
-    return commitMessage
