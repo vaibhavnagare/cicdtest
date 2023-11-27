@@ -12,6 +12,7 @@ pipeline {
             stage('Fetch Pull Request Data') {
                 steps {
                     script {
+                        echo "env.BRANCH_NAME: ${env.BRANCH_NAME}"
                         echo "env.CHANGE_URL: ${env.CHANGE_URL}"
                         echo "env.CHANGE_TARGET: ${env.CHANGE_TARGET}"
                         def branchName = sh(script: 'git rev-parse --abbrev-ref HEAD || git name-rev --name-only HEAD', returnStdout: true).trim()
