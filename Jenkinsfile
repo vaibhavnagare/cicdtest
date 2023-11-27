@@ -24,7 +24,7 @@ pipeline {
                         def diffURL = "${env.CHANGE_URL}.diff"
                         echo "diffURL ${diffURL}"
 
-                        def changedFilesList = sh(script: "git diff --name-only ${env.CHANGE_BRANCH} ${env.CHANGE_TARGET}", returnStdout: true).trim()
+                        def changedFilesList = sh(script: "git diff origin/${env.CHANGE_BRANCH} origin/${env.CHANGE_TARGET}", returnStdout: true).trim()
                         checkSysOuts(changedFilesList);
                     }
                 }
