@@ -21,6 +21,10 @@ pipeline {
                         echo "env.CHANGE_TARGET: ${env.CHANGE_TARGET}"
                         def diffURL = "${env.CHANGE_URL}.diff"
                         echo "diffURL ${diffURL}"
+                        def changedFiles = pullRequest.files.collect {
+                            echo "fileName ::  it.getFilename()"
+                            it.getFilename()
+                        }
                         def diff = sh(script: 'curl -s ${diffURL}', returnStdout: true).trim()
                         if (diff.contains('System.out')) {
                             echo "Diff contains 'sysout'"
