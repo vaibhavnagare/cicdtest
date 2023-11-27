@@ -91,4 +91,3 @@ String getCommitMessage(){
     }
     return commitMessage
 }
-
