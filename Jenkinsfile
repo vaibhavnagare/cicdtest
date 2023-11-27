@@ -24,18 +24,23 @@ pipeline {
                         def diffURL = "${env.CHANGE_URL}.diff"
                         echo "diffURL ${diffURL}"
 
+                         sh 'git fetch origin'
+                        def changedFiles = sh(script: "git diff-tree -r --no-commit-id --name-only HEAD +refs/heads/master:refs/remotes/@{remote}/master", returnStdout: true).trim()
+
+/*
                         pullRequest.setCredentials('vaibhavdnagare', 'Vaibhav20006!')
                         for (commitFile in pullRequest.files) {
                             echo "SHA: ${commitFile.sha} File Name: ${commitFile.filename} Status: ${commitFile.status}"
                         }
+ */
 
-                        sh 'git fetch origin'
+/*                         sh 'git fetch origin'
                         def changedFiles = sh(script: "git diff --name-only origin/${CHANGE_TARGET} origin/${CHANGE_BRANCH}", returnStdout: true).trim()
                         // Process changedFiles as needed
                         echo "Changed Files: ${changedFiles}"
 
                         def changedFilesList = sh(script: "git diff origin/${env.CHANGE_BRANCH} origin/${env.CHANGE_TARGET}", returnStdout: true).trim()
-                        checkSysOuts(changedFilesList);
+                        checkSysOuts(changedFilesList); */
                     }
                 }
             }
