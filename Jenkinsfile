@@ -20,7 +20,7 @@ pipeline {
                         echo "env.CHANGE_URL: ${env.CHANGE_URL}"
                         echo "env.CHANGE_TARGET: ${env.CHANGE_TARGET}"
                         def diffURL = "${env.CHANGE_URL}.diff"
-                        def diff = sh(script: 'curl -s $diffURL', returnStdout: true).trim()
+                        def diff = sh(script: 'curl -s ${diffURL}', returnStdout: true).trim()
                         if (diff.contains('System.out')) {
                             echo "Diff contains 'sysout'"
                         } else {
