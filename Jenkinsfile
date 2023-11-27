@@ -24,6 +24,10 @@ pipeline {
                         def diffURL = "${env.CHANGE_URL}.diff"
                         echo "diffURL ${diffURL}"
 
+                        for (commitFile in pullRequest.files) {
+                            echo "SHA: ${commitFile.sha} File Name: ${commitFile.filename} Status: ${commitFile.status}"
+                        }
+
                         sh 'git fetch origin'
                         def changedFiles = sh(script: "git diff --name-only origin/${CHANGE_TARGET} origin/${CHANGE_BRANCH}", returnStdout: true).trim()
                         // Process changedFiles as needed
