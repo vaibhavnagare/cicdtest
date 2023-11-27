@@ -1,37 +1,36 @@
 pipeline {
     agent any
 
+    environment {
+        GITHUB_API_URL = 'https://api.github.com'
+        GITHUB_TOKEN = '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'
+        REPO_OWNER = 'vaibhavnagare'
+        REPO_NAME = 'cicdtest'
+    }
+
      stages {
-            stage('Retrieve PR File Paths') {
+            stage('Fetch Pull Request Data') {
                 steps {
                     script {
-                     echo 'I am here 1'
-                        // Get the Git URL of the repository
-                        def gitUrl = sh(returnStdout: true, script: 'git config --get remote.origin.url').trim()
-                        echo 'I am here 2'
-                        // Extract repository owner's name and repository name from the Git URL
-                        def gitParts = gitUrl.tokenize(':')[1].tokenize('/')
-                        def ownerName = gitParts[0]
-                        def repoName = gitParts[1].replace('.git', '')
+                        echo "env.BRANCH_NAME: ${env.BRANCH_NAME}"
+                        def branchName = sh(script: 'git rev-parse --abbrev-ref HEAD || git name-rev --name-only HEAD', returnStdout: true).trim()
+                        if (branchName == 'HEAD') {
+                            def commitID = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                            echo "Detached HEAD Commit: ${commitID}"
 
-                        echo 'I am here 3'
-                        // Get the pull request number from the environment variable
-
-                        echo "CHANGE_ID : ${env.CHANGE_ID}"
-                        def prNumber = env.CHANGE_ID.toInteger()
-                        def gitHubContext = github
-
-                        echo 'I am here 4 $prNumber >> $gitHubContext'
-
-                        def pullRequest = gitHubContext.getPullRequest(owner: ownerName, repository: repoName, number: prNumber)
-                        echo 'I am here 5'
-                        // Get the changed files in the pull request
-                        def changedFiles = gitHubContext.getPullRequestFiles(owner: ownerName, repository: repoName, number: prNumber)
-                        echo 'I am here'
-                        // Print the file paths
-                        for (file in changedFiles) {
-                        echo 'Vaibhav'
-                            println("Changed file: ${file.filename}")
+                            branchName = sh(script: 'git branch --contains ${commitID}', returnStdout: true).trim()
+                            if (!branchName.contains('HEAD')) {
+                                echo "Current Branch: ${branchName}"
+                                def changedFilesList = sh(script: 'git diff --name-only ${branchName}', returnStdout: true).trim()
+                                checkSysOuts(changedFilesList);
+                            } else {
+                                def changedFilesList = sh(script: 'git show --pretty="" --name-only ${commitID}', returnStdout: true).trim()
+                                checkSysOuts(changedFilesList);
+                            }
+                        } else {
+                            echo "Current Branch: ${branchName}"
+                           def changedFilesList = sh(script: "git diff --name-only ${branchName}", returnStdout: true).trim()
+                            checkSysOuts(changedFilesList);
                         }
                     }
                 }
@@ -45,16 +44,50 @@ pipeline {
       }
 }
 
-/**
- * Compares the current branch and target branch and extract the changed files.
- *
- * @return the PR changed files.
- */
-def getPRChangelog() {
-    return sh(
-            script: "git --no-pager diff origin/${params.target} --name-only",
-            returnStdout: true
-    ).split('\n')
+def checkSysOuts(changedFilesList) {
+    def fileList = changedFilesList.tokenize('\n')
+    fileList.each { file ->
+        if (file.endsWith('.java')) {
+            def fileContent = readFile(file.trim())
+
+            if (fileContent.contains('System.out')) {
+                echo "File ${file} contains 'sysout'"
+            } else {
+                echo "File ${file} does not contain 'sysout'"
+            }
+        }
+    }
 }
 
+@NonCPS
+List<String> getChangedFilesList(){
+    def changedFiles = []
+    for (changeLogSet in currentBuild.changeSets) {
+        for (entry in changeLogSet.getItems()){
+            changedFiles.addAll(entry.affectedPaths)
+        }
+    }
+    return changedFiles
+}
 
+@NonCPS
+String getGitcommitID(){
+    gitCommitID = " "
+    for ( changeLogSet in currentBuild.changeSets){
+        for (entry in changeLogSet.getItems()){
+            gitCommitID = entry.commitId
+        }
+    }
+    return gitCommitID
+}
+
+@NonCPS
+String getCommitMessage(){
+    commitMessage = " "
+    for ( changeLogSet in currentBuild.changeSets){
+        for (entry in changeLogSet.getItems()){
+            commitMessage = entry.msg
+        }
+    }
+    return commitMessage
+}
