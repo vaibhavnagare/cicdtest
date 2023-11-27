@@ -56,3 +56,4 @@ def getPRChangelog() {
             returnStdout: true
     ).split('\n')
 }
+
