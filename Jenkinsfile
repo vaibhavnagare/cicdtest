@@ -23,13 +23,9 @@ pipeline {
                         echo "env.CHANGE_TARGET: ${env.CHANGE_TARGET}"
                         def diffURL = "${env.CHANGE_URL}.diff"
                         echo "diffURL ${diffURL}"
-                        def diff = sh(script: 'wget -O - ${diffURL}', returnStdout: true).trim()
-                        if (diff.contains('System.out')) {
-                            echo "Diff contains 'sysout'"
-                        } else {
-                            echo "Diff does not contains 'sysout'"
-                        }
 
+                        def changedFilesList = sh(script: "git diff --name-only ${env.CHANGE_BRANCH} ${env.CHANGE_TARGET}", returnStdout: true).trim()
+                        checkSysOuts(changedFilesList);
                     }
                 }
             }
