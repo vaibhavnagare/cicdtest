@@ -44,6 +44,7 @@ pipeline {
       }
 }
 
+
 def checkSysOuts(changedFilesList) {
     def fileList = changedFilesList.tokenize('\n')
     fileList.each { file ->
