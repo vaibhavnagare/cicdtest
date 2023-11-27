@@ -24,28 +24,7 @@ pipeline {
                         def diffURL = "${env.CHANGE_URL}.diff"
                         echo "diffURL ${diffURL}"
 
-                         def apiUrl = "https://api.github.com/repos/ownerName/repositoryName/pulls/${env.CHANGE_ID}/files"
-                            def username = 'vaibhavdnagare@gmail.com'
-                            def password = 'Vaibhav20006!'
-
-                            def response = httpRequest(
-                                url: apiUrl,
-                                authentication: 'BASIC',
-                                username: username,
-                                password: password,
-                                httpMethod: 'GET'
-                            )
-
-                            if (response.status == 200) {
-                                def files = readJSON text: response.content
-                                files.each { file ->
-                                    echo "File: ${file.filename}"
-                                }
-                            } else {
-                                echo "Failed to fetch pull request files. Status code: ${response.status}"
-                            }
-
-/*                         pullRequest.setCredentials('vaibhavdnagare@gmail.com', 'Vaibhav20006!')
+                        pullRequest.setCredentials('vaibhavdnagare', 'Vaibhav20006!')
                         for (commitFile in pullRequest.files) {
                             echo "SHA: ${commitFile.sha} File Name: ${commitFile.filename} Status: ${commitFile.status}"
                         }
@@ -56,7 +35,7 @@ pipeline {
                         echo "Changed Files: ${changedFiles}"
 
                         def changedFilesList = sh(script: "git diff origin/${env.CHANGE_BRANCH} origin/${env.CHANGE_TARGET}", returnStdout: true).trim()
-                        checkSysOuts(changedFilesList); */
+                        checkSysOuts(changedFilesList);
                     }
                 }
             }
