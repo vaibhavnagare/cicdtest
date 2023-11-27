@@ -81,5 +81,3 @@ String getGitcommitID(){
     }
     return gitCommitID
 }
-
-
