@@ -25,7 +25,7 @@ pipeline {
                         echo "diffURL ${diffURL}"
 
                         sh 'git fetch origin'
-                        def changedFiles = sh(script: 'git diff --name-only origin/${CHANGE_TARGET}...origin/${CHANGE_BRANCH}', returnStdout: true).trim()
+                        def changedFiles = sh(script: 'git diff --name-only origin/${CHANGE_TARGET} origin/${CHANGE_BRANCH}', returnStdout: true).trim()
                         // Process changedFiles as needed
                         echo "Changed Files: ${changedFiles}"
 
