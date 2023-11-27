@@ -29,7 +29,8 @@ pipeline {
                             }
                         } else {
                             echo "Current Branch: ${branchName}"
-                           def changedFilesList = sh(script: "git diff --name-only ${branchName}", returnStdout: true).trim()
+                            def parentBranch = sh(script: "git show-branch | grep '*' | grep -v "$(git rev-parse --abbrev-ref HEAD)" | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//'", returnStdout: true).trim()
+                            def changedFilesList = sh(script: "git diff --name-only ${branchName} ${parentBranch}", returnStdout: true).trim()
                             checkSysOuts(changedFilesList);
                         }
                     }
