@@ -17,23 +17,18 @@ pipeline {
                          echo "PULL_REQUEST is ${env.PULL_REQUEST}"
                         echo "env.BUILD_URL: ${env.BUILD_URL}"
                         echo "env.BRANCH_NAME: ${env.BRANCH_NAME}"
+                        echo "env.GIT_BRANCH: ${env.GIT_BRANCH}"
                         echo "env.CHANGE_URL: ${env.CHANGE_URL}"
                         echo "env.CHANGE_TARGET: ${env.CHANGE_TARGET}"
                         def diffURL = "${env.CHANGE_URL}.diff"
                         echo "diffURL ${diffURL}"
                         def github = githubApi()
 
-                        // Get the current pull request
-                        def currentPull = github.getPullRequest(
-                            owner: 'ownerName',
-                            repository: 'repositoryName',
-                            number: env.CHANGE_ID
-                        )
-
-                        // Get the files associated with the pull request
-                        def pullRequestFiles = currentPull.listFiles()
-                        pullRequestFiles.each { file ->
-                            echo "File: ${file.filename}"
+                        def diff = sh(script: 'wget -O - ${diffURL}', returnStdout: true).trim()
+                        if (diff.contains('System.out')) {
+                            echo "Diff contains 'sysout'"
+                        } else {
+                            echo "Diff does not contains 'sysout'"
                         }
 
                     }
