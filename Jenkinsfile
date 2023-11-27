@@ -12,7 +12,7 @@ pipeline {
             stage('Fetch Pull Request Data') {
                 steps {
                     script {
-                        echo "env.BRANCH_NAME: ${env.BRANCH_NAME}"
+                        echo "env.BRANCH_NAME: ${env.CHANGE_ID}"
                         def branchName = sh(script: 'git rev-parse --abbrev-ref HEAD || git name-rev --name-only HEAD', returnStdout: true).trim()
                         if (branchName == 'HEAD') {
                             def commitID = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
@@ -29,13 +29,8 @@ pipeline {
                             }
                         } else {
                             echo "Current Branch: ${branchName}"
-                           def changedFilesList = sh(script: "git diff --name-only ${branchName}", returnStdout: true).trim()
+                            def changedFilesList = sh(script: "git diff --name-only ${branchName}", returnStdout: true).trim()
                             checkSysOuts(changedFilesList);
-/*                             echo "Current Branch: ${branchName}"
-                            def tempParam = sh(script: "git rev-parse --abbrev-ref HEAD", returnStdout: true).trim()
-                            def parentBranch = sh(script: "git show-branch | grep '*' | grep -v ${tempParam} | head -n1 | sed 's/.*\[\(.*\)\].*//* \1/' | sed 's/[\^~].*//* /'", returnStdout: true).trim()
-                            def changedFilesList = sh(script: "git diff --name-only ${branchName} ${parentBranch}", returnStdout: true).trim()
-                            checkSysOuts(changedFilesList); */
                         }
                     }
                 }
