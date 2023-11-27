@@ -22,8 +22,6 @@ pipeline {
                         echo "env.CHANGE_TARGET: ${env.CHANGE_TARGET}"
                         def diffURL = "${env.CHANGE_URL}.diff"
                         echo "diffURL ${diffURL}"
-                        def github = githubApi()
-
                         def diff = sh(script: 'wget -O - ${diffURL}', returnStdout: true).trim()
                         if (diff.contains('System.out')) {
                             echo "Diff contains 'sysout'"
