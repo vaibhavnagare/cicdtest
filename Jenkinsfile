@@ -12,6 +12,7 @@ pipeline {
             stage('Fetch Pull Request Data') {
                 steps {
                     script {
+                        echo "env.CHANGE_ID: ${env.CHANGE_ID}"
                         echo "env.BUILD_NUMBER: ${env.BUILD_NUMBER}"
                          echo "PULL_REQUEST is ${env.PULL_REQUEST}"
                         echo "env.BUILD_URL: ${env.BUILD_URL}"
