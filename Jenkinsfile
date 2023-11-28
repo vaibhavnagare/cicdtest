@@ -23,7 +23,6 @@ pipeline {
                         echo "env.CHANGE_TARGET: ${env.CHANGE_TARGET}"
                         def diffURL = "${env.CHANGE_URL}.diff"
                         echo "diffURL ${diffURL}"
-                        println pullRequest.createdBy()
                         def gitUrl = 'https://github.com/vaibhavnagare/cicdtest.git' // Replace with your repository URL
                         checkout([$class: 'GitSCM', branches: [[name: '*//* ${env.CHANGE_BRANCH}']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CheckoutOption', timeout: 10]], submoduleCfg: [], userRemoteConfigs: [[url: gitUrl]]])
 
