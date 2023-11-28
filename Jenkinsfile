@@ -24,7 +24,7 @@ pipeline {
                         def diffURL = "${env.CHANGE_URL}.diff"
                         echo "diffURL ${diffURL}"
                          sh 'git fetch origin'
-                        def changedFiles = sh(script: "git diff-tree -r --no-commit-id --name-only HEAD +refs/heads/master:refs/remotes/@{remote}/master", returnStdout: true).trim()
+                        def changedFiles = sh(script: "git diff-tree -r --no-commit-id --name-only HEAD remotes/@{remote}/master", returnStdout: true).trim()
 
 /*
                         pullRequest.setCredentials('vaibhavdnagare', 'Vaibhav20006!')
