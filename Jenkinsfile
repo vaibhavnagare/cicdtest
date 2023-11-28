@@ -28,7 +28,6 @@ pipeline {
                         checkout([$class: 'GitSCM', branches: [[name: '*//* ${env.CHANGE_BRANCH}']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CheckoutOption', timeout: 10]], submoduleCfg: [], userRemoteConfigs: [[url: gitUrl]]])
  */
                         def changedFiles = sh(script: "git diff --name-only $current_branch origin/master", returnStdout: true).trim()
-
                         echo "Changed Files: ${changedFiles}"
 
 /*
