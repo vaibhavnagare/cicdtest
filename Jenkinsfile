@@ -24,10 +24,10 @@ pipeline {
                         def diffURL = "${env.CHANGE_URL}.diff"
                         echo "diffURL ${diffURL}"
 
-                        def gitUrl = 'https://github.com/vaibhavnagare/cicdtest.git' // Replace with your repository URL
-                        checkout([$class: 'GitSCM', branches: [[name: '*/${env.CHANGE_BRANCH}']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CheckoutOption', timeout: 10]], submoduleCfg: [], userRemoteConfigs: [[url: gitUrl]]])
-
-                        def changedFiles = sh(script: 'git diff --name-only origin/${env.CHANGE_TARGET}...HEAD', returnStdout: true).trim()
+                    /*     def gitUrl = 'https://github.com/vaibhavnagare/cicdtest.git' // Replace with your repository URL
+                        checkout([$class: 'GitSCM', branches: [[name: '*//* ${env.CHANGE_BRANCH}']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CheckoutOption', timeout: 10]], submoduleCfg: [], userRemoteConfigs: [[url: gitUrl]]])
+ */
+                        def changedFiles = sh(script: "git diff --name-only ${env.CHANGE_BRANCH} origin/${env.CHANGE_TARGET}", returnStdout: true).trim()
 
                         echo "Changed Files: ${changedFiles}"
 
