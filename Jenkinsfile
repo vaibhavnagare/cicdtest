@@ -26,7 +26,7 @@ pipeline {
                         echo "pullRequest ${pullRequest}"
                          sh 'git fetch origin'
                          pullRequest.setCredentials('vaibhavdnagare', 'Vaibhav20006!')
-                        def changedFiles = sh(script: "git diff-tree -r --no-commit-id --name-only HEAD +refs/heads/master:refs/remotes/@{remote}/master", returnStdout: true).trim()
+                        def changedFiles = sh(script: "git diff-tree -r --no-commit-id --name-only HEAD +refs/heads/master:refs/remotes/origin", returnStdout: true).trim()
 
 /*
                         pullRequest.setCredentials('vaibhavdnagare', 'Vaibhav20006!')
