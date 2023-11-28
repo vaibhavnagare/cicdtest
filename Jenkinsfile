@@ -23,8 +23,8 @@ pipeline {
                         echo "env.CHANGE_TARGET: ${env.CHANGE_TARGET}"
                         def diffURL = "${env.CHANGE_URL}.diff"
                         echo "diffURL ${diffURL}"
-                           sh "git fetch --no-tags origin '+refs/heads/BRANCHE1:refs/remotes/origin/BRANCHE1'"
-                           def gitDiff = sh(script: "git diff --name-only origin/BRANCHE1...origin/BRANCHE2", returnStdout: true).trim()
+                           sh "git fetch --no-tags origin '+refs/heads/${env.CHANGE_BRANCH}:refs/remotes/origin/${env.CHANGE_TARGET}'"
+                           def gitDiff = sh(script: "git diff --name-only origin/${env.CHANGE_BRANCH}...origin/${env.CHANGE_TARGET}", returnStdout: true).trim()
                            echo gitDiff
 
 
