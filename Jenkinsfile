@@ -56,15 +56,12 @@ pipeline {
 }
 
 def checkSysOuts(changedFilesList) {
-    def fileList = changedFilesList.tokenize('\n')
+    def fileList = changedFilesList.readLines()
     fileList.each { file ->
         if (file.endsWith('.java')) {
-            def fileContent = readFile(file.trim())
-
-            if (fileContent.contains('System.out')) {
-                echo "File ${file} contains 'sysout'"
-            } else {
-                echo "File ${file} does not contain 'sysout'"
+            def fileContent = sh(script: "git show origin/${env.CHANGE_BRANCH}:${file}", returnStdout: true).trim()
+            if (fileContent.contains("System.out")) {
+                error "File ${file} contains 'system.out'."
             }
         }
     }
