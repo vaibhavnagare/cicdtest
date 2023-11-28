@@ -27,7 +27,7 @@ pipeline {
                     /*     def gitUrl = 'https://github.com/vaibhavnagare/cicdtest.git' // Replace with your repository URL
                         checkout([$class: 'GitSCM', branches: [[name: '*//* ${env.CHANGE_BRANCH}']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CheckoutOption', timeout: 10]], submoduleCfg: [], userRemoteConfigs: [[url: gitUrl]]])
  */
-                        def changedFiles = sh(script: "git diff --name-only ${env.CHANGE_BRANCH} origin/${env.CHANGE_TARGET}", returnStdout: true).trim()
+                        def changedFiles = sh(script: "git diff --name-only $current_branch origin/master", returnStdout: true).trim()
 
                         echo "Changed Files: ${changedFiles}"
 
