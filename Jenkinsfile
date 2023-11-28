@@ -23,10 +23,13 @@ pipeline {
                         echo "env.CHANGE_TARGET: ${env.CHANGE_TARGET}"
                         def diffURL = "${env.CHANGE_URL}.diff"
                         echo "diffURL ${diffURL}"
-                           sh "git fetch --no-tags origin '+refs/heads/${env.CHANGE_BRANCH}:refs/remotes/origin/${env.CHANGE_TARGET}'"
-                           def gitDiff = sh(script: "git diff --name-only origin/${env.CHANGE_BRANCH}...origin/${env.CHANGE_TARGET}", returnStdout: true).trim()
-                           echo gitDiff
 
+                        def gitUrl = 'https://github.com/vaibhavnagare/cicdtest.git' // Replace with your repository URL
+                        checkout([$class: 'GitSCM', branches: [[name: '*/pull-request-branch']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CheckoutOption', timeout: 10]], submoduleCfg: [], userRemoteConfigs: [[url: gitUrl]]])
+
+                        def changedFiles = sh(script: 'git diff --name-only origin/base-branch...HEAD', returnStdout: true).trim()
+
+                        echo "Changed Files: ${changedFiles}"
 
 /*
                         pullRequest.setCredentials('vaibhavdnagare', 'Vaibhav20006!')
