@@ -24,7 +24,7 @@ pipeline {
                         def diffURL = "${env.CHANGE_URL}.diff"
                         echo "diffURL ${diffURL}"
 
-                        def apiUrl = 'https://api.github.com/repos/vaibhavnagare/cicdtest' // Replace placeholders with actual values
+                        def apiUrl = 'https://api.github.com/repos/vaibhavnagare/cicdtest/pulls' // Replace placeholders with actual values
                         def accessToken = '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' // Replace with your GitHub Personal Access Token
 
                         def response = httpRequest(
@@ -42,8 +42,8 @@ pipeline {
                             def jsonResponse = new groovy.json.JsonSlurper().parseText(response.content)
                             jsonResponse.each { pullRequest ->
                                 // Process each pull request data as needed
-                                println "Pull Request Title: ${pullRequest.name}"
-                                println "Pull Request URL: ${pullRequest.full_name}"
+                                println "Pull Request Title: ${pullRequest.title}"
+                                println "Pull Request URL: ${pullRequest.html_url}"
                                 // Add more processing or actions here
                             }
                         } else {
