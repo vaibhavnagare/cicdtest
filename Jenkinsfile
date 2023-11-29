@@ -38,9 +38,8 @@ pipeline {
                         )
 
                         if (response.status == 200) {
+                            println "Response: ${response.content}"
                             def jsonResponse = new groovy.json.JsonSlurper().parseText(response.content)
-                            // Process jsonResponse - it contains the data from the API response
-                            // For example, you can iterate through the pull requests and perform actions
                             jsonResponse.each { pullRequest ->
                                 // Process each pull request data as needed
                                 println "Pull Request Title: ${pullRequest.title}"
