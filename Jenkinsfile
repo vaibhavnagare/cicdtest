@@ -24,7 +24,7 @@ pipeline {
                         def diffURL = "${env.CHANGE_URL}.diff"
                         echo "diffURL ${diffURL}"
 
-                        def response = httpRequest acceptType: 'application/json', contentType: 'application/vnd.github+json',
+                        def response = httpRequest acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON',
                                                    httpMode: 'GET',
                                                    Authorization: 'Bearer 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'
                                                    url: "https://api.github.com/repos/vaibhavnagare/cicdtest/pulls/1/files"
