@@ -25,7 +25,7 @@ pipeline {
                         echo "diffURL ${diffURL}"
 
                         def apiUrl = 'https://api.github.com/repos/vaibhavnagare/cicdtest/pulls' // Replace placeholders with actual values
-                        def accessToken = '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' // Replace with your GitHub Personal Access Token
+                        def accessToken = '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' // Replace with your GitHub Personal Access Token
 
                         def response = httpRequest(
                             acceptType: 'APPLICATION_JSON',
@@ -41,42 +41,17 @@ pipeline {
                             println "Response: ${response.content}"
                             def jsonResponse = new groovy.json.JsonSlurper().parseText(response.content)
                             jsonResponse.each { pullRequest ->
-                                // Process each pull request data as needed
-                                println "Pull Request Title: ${pullRequest.title}"
-                                println "Pull Request URL: ${pullRequest.html_url}"
-                                // Add more processing or actions here
+                                if (pullRequest.filename.endsWith('.java')) {
+                                    println "Checking file :: ${pullRequest.filename}"
+                                    if (pullRequest.patch.contains("System.out")) {
+                                        error "File ${file} contains 'system.out'."
+                                    }
+                                }
                             }
                         } else {
                             println "Failed to fetch pull requests. Status code: ${response.status}"
                             println "Response: ${response.content}"
                         }
-
-                       /*  def response = httpRequest acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON',
-                                                   httpMode: 'GET',
-                                                   Authorization: 'Bearer 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'
-                                                   url: "https://api.github.com/repos/vaibhavnagare/cicdtest/pulls/1/files" */
-                        echo "Changed Files: ${response}"
-
-/*                         def gitUrl = 'https://github.com/vaibhavnagare/cicdtest.git' // Replace with your repository URL
-                        checkout([$class: 'GitSCM', branches: [[name: '*//*  *//* ${env.CHANGE_BRANCH}']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CheckoutOption', timeout: 10]], submoduleCfg: [], userRemoteConfigs: [[url: gitUrl]]])
-
-                        def changedFiles = sh(script: "git diff --name-only origin/${env.CHANGE_BRANCH} origin/${env.CHANGE_TARGET}", returnStdout: true).trim()
-                        echo "Changed Files: ${changedFiles}" */
-
-/*
-                        pullRequest.setCredentials('vaibhavdnagare', 'Vaibhav20006!')
-                        for (commitFile in pullRequest.files) {
-                            echo "SHA: ${commitFile.sha} File Name: ${commitFile.filename} Status: ${commitFile.status}"
-                        }
- */
-
-/*                         sh 'git fetch origin'
-                        def changedFiles = sh(script: "git diff --name-only origin/${CHANGE_TARGET} origin/${CHANGE_BRANCH}", returnStdout: true).trim()
-                        // Process changedFiles as needed
-                        echo "Changed Files: ${changedFiles}"
-
-                        def changedFilesList = sh(script: "git diff origin/${env.CHANGE_BRANCH} origin/${env.CHANGE_TARGET}", returnStdout: true).trim()
-                        checkSysOuts(changedFilesList); */
                     }
                 }
             }
