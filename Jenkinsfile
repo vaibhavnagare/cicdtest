@@ -42,8 +42,8 @@ pipeline {
                             def jsonResponse = new groovy.json.JsonSlurper().parseText(response.content)
                             jsonResponse.each { pullRequest ->
                                 // Process each pull request data as needed
-                                println "Pull Request Title: ${pullRequest.title}"
-                                println "Pull Request URL: ${pullRequest.html_url}"
+                                println "Pull Request Title: ${pullRequest.name}"
+                                println "Pull Request URL: ${pullRequest.full_name}"
                                 // Add more processing or actions here
                             }
                         } else {
