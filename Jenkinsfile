@@ -37,6 +37,21 @@ pipeline {
                             ]
                         )
 
+                        if (response.status == 200) {
+                            def jsonResponse = readJSON(text: response.content)
+                            // Process jsonResponse - it contains the data from the API response
+                            // For example, you can iterate through the pull requests and perform actions
+                            jsonResponse.each { pullRequest ->
+                                // Process each pull request data as needed
+                                println "Pull Request Title: ${pullRequest.title}"
+                                println "Pull Request URL: ${pullRequest.html_url}"
+                                // Add more processing or actions here
+                            }
+                        } else {
+                            println "Failed to fetch pull requests. Status code: ${response.status}"
+                            println "Response: ${response.content}"
+                        }
+
                        /*  def response = httpRequest acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON',
                                                    httpMode: 'GET',
                                                    Authorization: 'Bearer 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'
