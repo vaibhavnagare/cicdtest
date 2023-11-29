@@ -23,11 +23,18 @@ pipeline {
                         echo "env.CHANGE_TARGET: ${env.CHANGE_TARGET}"
                         def diffURL = "${env.CHANGE_URL}.diff"
                         echo "diffURL ${diffURL}"
-                        def gitUrl = 'https://github.com/vaibhavnagare/cicdtest.git' // Replace with your repository URL
-                        checkout([$class: 'GitSCM', branches: [[name: '*//* ${env.CHANGE_BRANCH}']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CheckoutOption', timeout: 10]], submoduleCfg: [], userRemoteConfigs: [[url: gitUrl]]])
+
+                        def response = httpRequest acceptType: 'application/vnd.github+json', contentType: 'application/vnd.github+json',
+                                                   httpMode: 'GET', requestBody: patchOrg,
+                                                   Authorization: 'Bearer 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'
+                                                   url: "https://api.github.com/repos/vaibhavnagare/cicdtest/pulls/1/files"
+                        echo "Changed Files: ${response}"
+
+/*                         def gitUrl = 'https://github.com/vaibhavnagare/cicdtest.git' // Replace with your repository URL
+                        checkout([$class: 'GitSCM', branches: [[name: '*//*  *//* ${env.CHANGE_BRANCH}']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CheckoutOption', timeout: 10]], submoduleCfg: [], userRemoteConfigs: [[url: gitUrl]]])
 
                         def changedFiles = sh(script: "git diff --name-only origin/${env.CHANGE_BRANCH} origin/${env.CHANGE_TARGET}", returnStdout: true).trim()
-                        echo "Changed Files: ${changedFiles}"
+                        echo "Changed Files: ${changedFiles}" */
 
 /*
                         pullRequest.setCredentials('vaibhavdnagare', 'Vaibhav20006!')
