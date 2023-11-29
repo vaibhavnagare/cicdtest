@@ -38,7 +38,7 @@ pipeline {
                         )
 
                         if (response.status == 200) {
-                            def jsonResponse = readJSON(text: response.content)
+                            def jsonResponse = readJSON text: response.content
                             // Process jsonResponse - it contains the data from the API response
                             // For example, you can iterate through the pull requests and perform actions
                             jsonResponse.each { pullRequest ->
