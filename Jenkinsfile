@@ -25,7 +25,7 @@ pipeline {
                         echo "diffURL ${diffURL}"
 
                         def apiUrl = 'https://api.github.com/repos/vaibhavnagare/cicdtest' // Replace placeholders with actual values
-                        def accessToken = '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' // Replace with your GitHub Personal Access Token
+                        def accessToken = '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' // Replace with your GitHub Personal Access Token
 
                         def response = httpRequest(
                             acceptType: 'APPLICATION_JSON',
