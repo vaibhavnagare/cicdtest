@@ -24,10 +24,23 @@ pipeline {
                         def diffURL = "${env.CHANGE_URL}.diff"
                         echo "diffURL ${diffURL}"
 
-                        def response = httpRequest acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON',
+                        def apiUrl = 'https://api.github.com/repos/vaibhavnagare/cicdtest' // Replace placeholders with actual values
+                        def accessToken = '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' // Replace with your GitHub Personal Access Token
+
+                        def response = httpRequest(
+                            acceptType: 'APPLICATION_JSON',
+                            contentType: 'APPLICATION_JSON',
+                            httpMode: 'GET',
+                            url: apiUrl,
+                            headers: [
+                                Authorization: "Bearer $accessToken"
+                            ]
+                        )
+
+                       /*  def response = httpRequest acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON',
                                                    httpMode: 'GET',
                                                    Authorization: 'Bearer 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'
-                                                   url: "https://api.github.com/repos/vaibhavnagare/cicdtest/pulls/1/files"
+                                                   url: "https://api.github.com/repos/vaibhavnagare/cicdtest/pulls/1/files" */
                         echo "Changed Files: ${response}"
 
 /*                         def gitUrl = 'https://github.com/vaibhavnagare/cicdtest.git' // Replace with your repository URL
