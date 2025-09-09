@@ -20,10 +20,13 @@ pipeline {
 
                     // Fetch and print labels using the PR number
                     if (prNumber) {
-                        def response = httpRequest url: "https://api.github.com/repos/vaibhavnagare/cicdtest/pulls/${prNumber}", authentication: 'your-github-credentials-id'
-                        def pr = readJSON text: response.content
-                        def labels = pr.labels.collect { it.name }.join(', ')
-                        echo "Labels from GitHub PR #${prNumber}: ${labels}"
+                         def labelsJson = sh(script: "jq -r '.pull_request.labels[].name' \$GITHUB_EVENT_PATH", returnStdout: true).trim()
+                        LABELS = labelsJson.split('\n')
+                        echo "Labels on PR: ${LABELS}"
+                        // def response = httpRequest url: "https://api.github.com/repos/vaibhavnagare/cicdtest/pulls/${prNumber}", authentication: 'your-github-credentials-id'
+                        // def pr = readJSON text: response.content
+                        // def labels = pr.labels.collect { it.name }.join(', ')
+                        // echo "Labels from GitHub PR #${prNumber}: ${labels}"
                     } else {
                         echo "Could not determine PR number"
                     }
