@@ -1,12 +1,6 @@
-stage('Extract Labels') {
+stage('Run Playwright Tests') {
     steps {
-        script {
-            if (env.GITHUB_PR_LABELS) {
-                LABELS = env.GITHUB_PR_LABELS.split(',')
-                echo "Labels on PR: ${LABELS}"
-            } else {
-                error "No labels found on PR"
-            }
-        }
+        echo "Running Workforce tests..."
+        sh 'npx playwright test tests/workforce-test.spec.js'
     }
 }
