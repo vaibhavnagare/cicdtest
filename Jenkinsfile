@@ -20,7 +20,7 @@ pipeline {
 
                     // Fetch and print labels using the PR number
                     if (prNumber) {
-                        def response = httpRequest url: "https://api.github.com/repos/vaibhavnagare/cicdtest/pulls/${prNumber}", authentication: 'your-github-credentials-id'
+                        def response = httpRequest url: "https://api.github.com/repos/vaibhavnagare/cicdtest/pulls/${prNumber}", authentication: '037682c3-5f53-4f28-99f3-d79e58918c7d'
                         def pr = readJSON text: response.content
                         def labels = pr.labels.collect { it.name }.join(', ')
                         echo "Labels from GitHub PR #${prNumber}: ${labels}"
