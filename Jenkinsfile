@@ -1,46 +1,73 @@
 pipeline {
     agent any
-    triggers {
-        githubPullRequest() // if using github-pullrequest plugin
+    tools {
+        nodejs 'Default Node'
+        ant 'Default Ant'
     }
     environment {
-        LABELS = "" // will hold labels from PR
+        LABELS = ''
     }
     stages {
+        stage('Debug') {
+            steps {
+                echo "Change ID: ${env.CHANGE_ID}, Change Target: ${env.CHANGE_TARGET}, Labels: ${env.CHANGE_LABELS}"
+            }
+        }
+        stage('Checkout PR Branch') {
+            steps {
+                checkout scm
+                sh 'git pull origin pr/${CHANGE_ID}'
+            }
+        }
         stage('Extract Labels') {
             steps {
                 script {
-                    // assuming PR labels are exposed in env or from webhook payload
-                    def labelsJson = sh(script: "jq -r '.pull_request.labels[].name' \$GITHUB_EVENT_PATH", returnStdout: true).trim()
-                    LABELS = labelsJson.split('\n')
-                    echo "Labels on PR: ${LABELS}"
+                    if (env.CHANGE_ID) {
+                        def response = httpRequest url: "https://api.github.com/repos/vaibhavnagare/cicdtest/pulls/${env.CHANGE_ID}", authentication: 'your-github-credentials-id'
+                        def pr = readJSON text: response.content
+                        LABELS = pr.labels.collect { it.name }.join(',')
+                        echo "Labels on PR: ${LABELS}"
+                    } else {
+                        echo "No CHANGE_ID found"
+                    }
+                }
+            }
+        }
+        stage('Ant Build') {
+            steps {
+                dir('java/console') {
+                    sh 'ant build'
+                }
+            }
+        }
+        stage('Restart Server') {
+            steps {
+                sh 'systemctl restart your-server' // Replace with actual command
+            }
+        }
+        stage('Check Server') {
+            steps {
+                script {
+                    def serverUp = sh(script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:your-port', returnStdout: true).trim() == '200'
+                    if (!serverUp) {
+                        error 'Server not up'
+                    }
                 }
             }
         }
         stage('Run Playwright Tests') {
-            steps {
-                script {
-                    LABELS.each { label ->
-                        switch(label.toLowerCase()) {
-                            case "surveys":
-                                sh "npx playwright test --project=surveys"
-                                // OR sh "ant playwright.test.surveys"
-                                break
-                            case "cx":
-                                sh "npx playwright test --project=cx"
-                                break
-                            case "workforce":
-                                sh "npx playwright test --project=workforce"
-                                break
-                            case "api":
-                                sh "npx playwright test --project=api"
-                                break
-                            default:
-                                echo "No matching tests for label: ${label}"
-                        }
-                    }
-                }
+            when {
+                expression { LABELS.contains('CX') || LABELS.contains('Surveys') || LABELS.contains('Workforce') || LABELS.contains('API') }
             }
+            steps {
+                echo "Running Workforce tests..."
+                // sh 'npx playwright test tests/workforce-test.spec.js'
+            }
+        }
+    }
+    post {
+        always {
+            githubNotify status: currentBuild.result, description: currentBuild.result == 'SUCCESS' ? 'Tests passed' : 'Tests failed', context: 'ci/jenkins'
         }
     }
 }
