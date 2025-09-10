@@ -97,7 +97,6 @@ pipeline {
             }
         }
         
-        stages {        
         stage('Check PR and Labels') {
             steps {
                 script {
