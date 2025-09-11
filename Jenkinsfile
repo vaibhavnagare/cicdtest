@@ -85,9 +85,18 @@ pipeline {
                     
                     // Execute shell script on remote instance
                     sh """
-                       cd ~/amber/bin
-                       ./runPlaywrightTest.sh ${env.BRANCH_NAME_TO_PROCESS} ${env.PRODUCT_TO_TEST}
-                     """
+                        echo "Executing script on local dev instance..."
+                        
+                        # Execute the script on local machine outside Docker
+                        # Method 1: Direct execution if script is mounted/accessible
+                        /amber/bin/runPlaywrightTest.sh ${env.BRANCH_NAME_TO_PROCESS} ${env.PRODUCT_TO_TEST}
+                        
+                        # Method 2: Alternative paths (uncomment and modify as needed)
+                        # /home/vaibhavnagare/amber/bin/runPlaywrightTest.sh ${env.BRANCH_NAME_TO_PROCESS} ${env.PRODUCT_TO_TEST}
+                        # /opt/amber/bin/runPlaywrightTest.sh ${env.BRANCH_NAME_TO_PROCESS} ${env.PRODUCT_TO_TEST}
+                        
+                        echo "Script execution completed"
+                    """
                     // sh """
                     //     echo "Connecting to remote instance..."
                         
