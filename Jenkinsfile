@@ -70,14 +70,55 @@ pipeline {
                         
                         // Get branch name from Jenkins environment
                         def branchName = env.BRANCH_NAME ?: env.GIT_BRANCH
-                        if (branchName && branchName.startsWith('origin/')) {
-                            branchName = branchName.replace('origin/', '')
+                        def actualBranchName = branchName
+                        
+                        // Handle Pull Request branch naming
+                        if (branchName && branchName.startsWith('PR-')) {
+                            // For PRs, get the actual source branch name
+                            try {
+                                def prInfo = sh(
+                                    script: "git log --oneline -1 --pretty=format:'%s'",
+                                    returnStdout: true
+                                ).trim()
+                                echo "PR commit message: ${prInfo}"
+                                
+                                // Try to get the source branch from git
+                                def sourceBranch = sh(
+                                    script: "git branch -r --contains HEAD | grep -v 'origin/master' | grep -v 'origin/PR-' | head -1 | sed 's/.*origin\\///g' | xargs",
+                                    returnStdout: true
+                                ).trim()
+                                
+                                if (sourceBranch) {
+                                    actualBranchName = sourceBranch
+                                    echo "Found source branch from git: ${sourceBranch}"
+                                } else {
+                                    // Fallback: try to extract from environment variables
+                                    if (env.CHANGE_BRANCH) {
+                                        actualBranchName = env.CHANGE_BRANCH
+                                        echo "Found source branch from CHANGE_BRANCH: ${env.CHANGE_BRANCH}"
+                                    } else {
+                                        echo "Warning: Could not determine source branch for PR, using: ${branchName}"
+                                        actualBranchName = branchName
+                                    }
+                                }
+                            } catch (Exception e) {
+                                echo "Error getting source branch: ${e.getMessage()}"
+                                if (env.CHANGE_BRANCH) {
+                                    actualBranchName = env.CHANGE_BRANCH
+                                    echo "Using CHANGE_BRANCH as fallback: ${env.CHANGE_BRANCH}"
+                                }
+                            }
+                        } else if (branchName && branchName.startsWith('origin/')) {
+                            actualBranchName = branchName.replace('origin/', '')
                         }
                         
                         echo "=== CHECKOUT & PARSING STAGE ==="
-                        echo "Target branch: ${branchName}"
+                        echo "Original branch reference: ${branchName}"
+                        echo "Actual source branch: ${actualBranchName}"
                         echo "Build trigger: GitHub webhook"
                         echo "Container setup: Docker-beside-Docker"
+                        echo "PR Number: ${env.CHANGE_ID ?: 'Not a PR'}"
+                        echo "PR Target: ${env.CHANGE_TARGET ?: 'N/A'}"
                         
                         // Verify checkout
                         sh '''
@@ -86,14 +127,16 @@ pipeline {
                             ls -la
                             echo "Git status:"
                             git status || echo "Git not initialized"
+                            echo "Git branches:"
+                            git branch -a || echo "Could not list branches"
                         '''
                         
                         // Store branch name for later use
-                        env.TARGET_BRANCH = branchName
+                        env.TARGET_BRANCH = actualBranchName
                         
-                        if (branchName) {
+                        if (actualBranchName) {
                             // Parse branch name format
-                            def branchParts = branchName.split('-')
+                            def branchParts = actualBranchName.split('-')
                             echo "Branch parts: ${branchParts.join(', ')}"
                             
                             // Find product name in branch parts
