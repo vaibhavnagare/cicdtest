@@ -84,29 +84,32 @@ pipeline {
                     echo "Product: ${env.PRODUCT_TO_TEST}"
                     
                     // Execute shell script on remote instance
-                    // Replace with your actual remote instance details
                     sh """
-                        echo "Connecting to remote instance..."
+                       cd ~/amber/bin
+                       ./runPlaywrightTest.sh ${env.BRANCH_NAME_TO_PROCESS} ${env.PRODUCT_TO_TEST}
+                     """
+                    // sh """
+                    //     echo "Connecting to remote instance..."
                         
-                        # Option 1: Using SSH to execute script on remote machine
-                        # ssh user@your-remote-instance.com '/amber/bin/runPlaywrightTest.sh ${env.BRANCH_NAME_TO_PROCESS} ${env.PRODUCT_TO_TEST}'
+                    //     # Option 1: Using SSH to execute script on remote machine
+                    //     # ssh user@your-remote-instance.com '/amber/bin/runPlaywrightTest.sh ${env.BRANCH_NAME_TO_PROCESS} ${env.PRODUCT_TO_TEST}'
                         
-                        # Option 2: Using remote script execution with parameters
-                        # curl -X POST "http://your-remote-instance:port/execute-tests" \
-                        #      -H "Content-Type: application/json" \
-                        #      -d '{"branch": "${env.BRANCH_NAME_TO_PROCESS}", "product": "${env.PRODUCT_TO_TEST}"}'
+                    //     # Option 2: Using remote script execution with parameters
+                    //     # curl -X POST "http://your-remote-instance/execute-tests" \
+                    //     #      -H "Content-Type: application/json" \
+                    //     #      -d '{"branch": "${env.BRANCH_NAME_TO_PROCESS}", "product": "${env.PRODUCT_TO_TEST}"}'
+                    //
+                    //     # Option 3: Direct SSH command execution
+                    //     # ssh -o StrictHostKeyChecking=no user@remote-host << 'EOF'
+                    //     # cd /path/to/your/project
+                    //     # git pull origin master
+                    //     # git checkout ${env.BRANCH_NAME_TO_PROCESS}
+                    //     # # Clean build steps here
+                    //     # # Restart server steps here  
+                    //     # ant playwright.test.${env.PRODUCT_TO_TEST}
+                    //     # EOF
                         
-                        # Option 3: Direct SSH command execution
-                        # ssh -o StrictHostKeyChecking=no user@remote-host << 'EOF'
-                        # cd /path/to/your/project
-                        # git pull origin master
-                        # git checkout ${env.BRANCH_NAME_TO_PROCESS}
-                        # # Clean build steps here
-                        # # Restart server steps here  
-                        # ant playwright.test.${env.PRODUCT_TO_TEST}
-                        # EOF
-                        
-                        # For now, just echo the command that would be executed
+                    //     # For now, just echo the command that would be executed
                         echo "Would execute: test-script.sh ${env.BRANCH_NAME_TO_PROCESS} ${env.PRODUCT_TO_TEST}"
                         echo "Remote script should:"
                         echo "1. Git pull latest changes"
@@ -114,7 +117,7 @@ pipeline {
                         echo "3. Clean build"
                         echo "4. Restart server"
                         echo "5. Execute: ant playwright.test.${env.PRODUCT_TO_TEST}"
-                    """
+                    // """
                 }
             }
         }
