@@ -3,209 +3,125 @@ pipeline {
     
     // Standard pipeline options
     options {
-        // Enable automatic checkout
         timeout(time: 30, unit: 'MINUTES')
-        // Control build concurrency to limit Docker containers
+        // Control build concurrency - Only 1 Playwright test at a time per instance
         throttleJobProperty(
             categories: ['playwright-tests'],
             throttleEnabled: true,
             throttleOption: 'category',
-            maxConcurrentPerNode: 4,
-            maxConcurrentTotal: 4
+            maxConcurrentPerNode: 1,
+            maxConcurrentTotal: 1
         )
     }
     
-    // Use GitHub webhook instead of Generic Webhook Trigger
+    // Use GitHub webhook
     triggers {
         githubPush()
     }
     
     stages {
-        stage('Setup Environment') {
+        stage('Extract Product from Branch Name') {
             steps {
                 script {
-                    echo "=== ENVIRONMENT SETUP ==="
-                    echo "Preparing Docker-enabled Jenkins environment..."
+                    echo "=== BRANCH ANALYSIS ==="
                     
-                    // Verify Docker availability
-                    sh '''
-                        echo "=== CHECKING ENVIRONMENT ==="
-                        echo "Working directory: $(pwd)"
-                        echo "Docker version:"
-                        docker --version || echo "Docker not found"
-                        echo "Available tools:"
-                        which java && java -version || echo "Java not found"
-                        which ant && ant -version || echo "Ant not found"
-                        echo "========================="
-                    '''
+                    // Get actual branch name (handle PR case)
+                    def branchName = env.CHANGE_BRANCH ?: env.BRANCH_NAME ?: env.GIT_BRANCH
+                    if (branchName && branchName.startsWith('origin/')) {
+                        branchName = branchName.replace('origin/', '')
+                    }
+                    
+                    echo "Source branch: ${branchName}"
+                    echo "PR Number: ${env.CHANGE_ID ?: 'Direct push'}"
+                    echo "Target branch: ${env.CHANGE_TARGET ?: 'N/A'}"
+                    
+                    if (branchName) {
+                        // Parse branch name format: developername-builddate-branchname-productname-typeofissue-issue-details
+                        def branchParts = branchName.split('-')
+                        echo "Branch parts: ${branchParts.join(', ')}"
+                        
+                        // Find product name in branch parts
+                        def productLabels = ['cx', 'surveys', 'communities', 'workforce', 'api', 'all']
+                        def foundProducts = []
+                        
+                        branchParts.each { part ->
+                            def partLower = part.toLowerCase()
+                            productLabels.each { product ->
+                                if (partLower.contains(product)) {
+                                    foundProducts.add(product)
+                                }
+                            }
+                        }
+                        
+                        foundProducts = foundProducts.unique()
+                        
+                        if (foundProducts) {
+                            echo "Product(s) detected: ${foundProducts.join(', ')}"
+                            env.EXECUTE_TESTS = 'true'
+                            env.PRODUCT_TO_TEST = foundProducts[0] // Take first product found
+                            env.BRANCH_NAME_TO_PROCESS = branchName
+                        } else {
+                            echo "No product names found in branch name"
+                            echo "Expected format: developername-builddate-branchname-productname-typeofissue-issue-details"
+                            echo "Valid product names: ${productLabels.join(', ')}"
+                            env.EXECUTE_TESTS = 'false'
+                        }
+                    } else {
+                        echo "Could not determine branch name"
+                        env.EXECUTE_TESTS = 'false'
+                    }
+                    
+                    echo "=== RESULT ==="
+                    echo "EXECUTE_TESTS = ${env.EXECUTE_TESTS}"
+                    echo "PRODUCT_TO_TEST = ${env.PRODUCT_TO_TEST}"
+                    echo "BRANCH_NAME_TO_PROCESS = ${env.BRANCH_NAME_TO_PROCESS}"
+                    echo "==============="
                 }
             }
         }
         
-        stage('Execute in Docker Container') {
+        stage('Execute Tests on Remote Instance') {
+            when {
+                expression { return env.EXECUTE_TESTS == 'true' }
+            }
             steps {
                 script {
-                    echo "=== DOCKER CONTAINER EXECUTION ==="
+                    echo "=== EXECUTING TESTS ON REMOTE INSTANCE ==="
+                    echo "Branch: ${env.BRANCH_NAME_TO_PROCESS}"
+                    echo "Product: ${env.PRODUCT_TO_TEST}"
                     
-                    // Using Docker-beside-Docker approach with your Docker-enabled Jenkins
-                    docker.image('node:18-alpine').inside('-v /var/run/docker.sock:/var/run/docker.sock --user root') {
+                    // Execute shell script on remote instance
+                    // Replace with your actual remote instance details
+                    sh """
+                        echo "Connecting to remote instance..."
                         
-                        // Install required tools in Alpine container
-                        sh '''
-                            echo "=== CONTAINER SETUP ==="
-                            echo "Container ID: $(hostname)"
-                            
-                            # Install essential tools with Java 11
-                            apk add --no-cache git curl openjdk11-jre apache-ant
-                            
-                            # Verify installations
-                            node --version
-                            npm --version
-                            ant -version
-                            java -version
-                            echo "Java version: $(java -version 2>&1 | head -1)"
-                            
-                            echo "Environment ready for testing"
-                        '''
+                        # Option 1: Using SSH to execute script on remote machine
+                        # ssh user@your-remote-instance.com '/amber/bin/runPlaywrightTest.sh ${env.BRANCH_NAME_TO_PROCESS} ${env.PRODUCT_TO_TEST}'
                         
-                        // Get branch name from Jenkins environment
-                        def branchName = env.BRANCH_NAME ?: env.GIT_BRANCH
-                        def actualBranchName = branchName
+                        # Option 2: Using remote script execution with parameters
+                        # curl -X POST "http://your-remote-instance:port/execute-tests" \
+                        #      -H "Content-Type: application/json" \
+                        #      -d '{"branch": "${env.BRANCH_NAME_TO_PROCESS}", "product": "${env.PRODUCT_TO_TEST}"}'
                         
-                        // Handle Pull Request branch naming
-                        if (branchName && branchName.startsWith('PR-')) {
-                            // For PRs, get the actual source branch name
-                            try {
-                                def prInfo = sh(
-                                    script: "git log --oneline -1 --pretty=format:'%s'",
-                                    returnStdout: true
-                                ).trim()
-                                echo "PR commit message: ${prInfo}"
-                                
-                                // Try to get the source branch from git
-                                def sourceBranch = sh(
-                                    script: "git branch -r --contains HEAD | grep -v 'origin/master' | grep -v 'origin/PR-' | head -1 | sed 's/.*origin\\///g' | xargs",
-                                    returnStdout: true
-                                ).trim()
-                                
-                                if (sourceBranch) {
-                                    actualBranchName = sourceBranch
-                                    echo "Found source branch from git: ${sourceBranch}"
-                                } else {
-                                    // Fallback: try to extract from environment variables
-                                    if (env.CHANGE_BRANCH) {
-                                        actualBranchName = env.CHANGE_BRANCH
-                                        echo "Found source branch from CHANGE_BRANCH: ${env.CHANGE_BRANCH}"
-                                    } else {
-                                        echo "Warning: Could not determine source branch for PR, using: ${branchName}"
-                                        actualBranchName = branchName
-                                    }
-                                }
-                            } catch (Exception e) {
-                                echo "Error getting source branch: ${e.getMessage()}"
-                                if (env.CHANGE_BRANCH) {
-                                    actualBranchName = env.CHANGE_BRANCH
-                                    echo "Using CHANGE_BRANCH as fallback: ${env.CHANGE_BRANCH}"
-                                }
-                            }
-                        } else if (branchName && branchName.startsWith('origin/')) {
-                            actualBranchName = branchName.replace('origin/', '')
-                        }
+                        # Option 3: Direct SSH command execution
+                        # ssh -o StrictHostKeyChecking=no user@remote-host << 'EOF'
+                        # cd /path/to/your/project
+                        # git pull origin master
+                        # git checkout ${env.BRANCH_NAME_TO_PROCESS}
+                        # # Clean build steps here
+                        # # Restart server steps here  
+                        # ant playwright.test.${env.PRODUCT_TO_TEST}
+                        # EOF
                         
-                        echo "=== CHECKOUT & PARSING STAGE ==="
-                        echo "Original branch reference: ${branchName}"
-                        echo "Actual source branch: ${actualBranchName}"
-                        echo "Build trigger: GitHub webhook"
-                        echo "Container setup: Docker-beside-Docker"
-                        echo "PR Number: ${env.CHANGE_ID ?: 'Not a PR'}"
-                        echo "PR Target: ${env.CHANGE_TARGET ?: 'N/A'}"
-                        
-                        // Verify checkout
-                        sh '''
-                            echo "Current working directory:"
-                            pwd
-                            ls -la
-                            echo "Git status:"
-                            git status || echo "Git not initialized"
-                            echo "Git branches:"
-                            git branch -a || echo "Could not list branches"
-                        '''
-                        
-                        // Store branch name for later use
-                        env.TARGET_BRANCH = actualBranchName
-                        
-                        if (actualBranchName) {
-                            // Parse branch name format
-                            def branchParts = actualBranchName.split('-')
-                            echo "Branch parts: ${branchParts.join(', ')}"
-                            
-                            // Find product name in branch parts
-                            def productLabels = ['cx', 'surveys', 'communities', 'workforce', 'api', 'all']
-                            def foundProducts = []
-                            
-                            branchParts.each { part ->
-                                def partLower = part.toLowerCase()
-                                productLabels.each { product ->
-                                    if (partLower.contains(product)) {
-                                        foundProducts.add(product)
-                                    }
-                                }
-                            }
-                            
-                            foundProducts = foundProducts.unique()
-                            
-                            if (foundProducts) {
-                                echo "Product(s) detected: ${foundProducts.join(', ')}"
-                                env.EXECUTE_TESTS = 'true'
-                                env.PRODUCT_TO_TEST = foundProducts.join(',')
-                            } else {
-                                echo "No product names found in branch name"
-                                env.EXECUTE_TESTS = 'false'
-                            }
-                        } else {
-                            env.EXECUTE_TESTS = 'false'
-                        }
-                        
-                        echo "EXECUTE_TESTS = ${env.EXECUTE_TESTS}"
-                        echo "PRODUCT_TO_TEST = ${env.PRODUCT_TO_TEST}"
-                        
-                        // Execute tests if conditions are met
-                        if (env.EXECUTE_TESTS == 'true') {
-                            echo "=== EXECUTING TESTS ==="
-                            
-                            def productsToTest = env.PRODUCT_TO_TEST.split(',').collect { it.trim() }
-                            
-                            productsToTest.each { product ->
-                                echo "Processing product: ${product}"
-                                
-                                switch(product.toLowerCase()) {
-                                    case 'cx':
-                                        sh 'ant playwright.test.cx'
-                                        break
-                                    case 'surveys':
-                                        sh 'ant playwright.test.surveys'
-                                        break
-                                    case 'communities':
-                                        sh 'ant playwright.test.communities'
-                                        break
-                                    case 'workforce':
-                                        sh 'ant playwright.test.workforce'
-                                        break
-                                    case 'api':
-                                        sh 'ant playwright.test.api'
-                                        break
-                                    case 'all':
-                                        sh 'ant playwright.test'
-                                        break
-                                    default:
-                                        echo "Unknown product: ${product}"
-                                }
-                            }
-                        } else {
-                            echo "=== SKIPPING TESTS ==="
-                            echo "No valid products found in branch name or conditions not met"
-                        }
-                    }
+                        # For now, just echo the command that would be executed
+                        echo "Would execute: test-script.sh ${env.BRANCH_NAME_TO_PROCESS} ${env.PRODUCT_TO_TEST}"
+                        echo "Remote script should:"
+                        echo "1. Git pull latest changes"
+                        echo "2. Checkout to branch: ${env.BRANCH_NAME_TO_PROCESS}"
+                        echo "3. Clean build"
+                        echo "4. Restart server"
+                        echo "5. Execute: ant playwright.test.${env.PRODUCT_TO_TEST}"
+                    """
                 }
             }
         }
@@ -214,11 +130,22 @@ pipeline {
     post {
         always {
             script {
-                echo "=== CLEANUP ==="
-                echo "Docker container cleanup will be handled automatically"
-                // Publish test results if available
-                // publishHTML([...]) // Uncomment when you have test reports
+                echo "=== BUILD COMPLETE ==="
+                if (env.EXECUTE_TESTS == 'true') {
+                    echo "Tests executed for product: ${env.PRODUCT_TO_TEST}"
+                    echo "Branch processed: ${env.BRANCH_NAME_TO_PROCESS}"
+                } else {
+                    echo "No tests executed - branch name did not match expected format"
+                }
+                // Add test result publishing here if needed
+                // publishHTML([...])
             }
+        }
+        success {
+            echo "✅ Pipeline completed successfully"
+        }
+        failure {
+            echo "❌ Pipeline failed"
         }
     }
 }
