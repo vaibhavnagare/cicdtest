@@ -1,238 +1,153 @@
 pipeline {
     agent any
     
-    // Cancel previous builds for the same PR to avoid duplicates
+    // Standard pipeline options
     options {
-        skipDefaultCheckout()
-        // Prevent concurrent builds for the same PR
-        disableConcurrentBuilds(abortPrevious: true)
-    }
-    
-    // Alternative: Generic Webhook Trigger for label-specific events
-    triggers {
-        GenericTrigger(
-            genericVariables: [
-                [key: 'action', value: '$.action'],
-                [key: 'label_name', value: '$.label.name'],
-                [key: 'pr_number', value: '$.number'],
-                [key: 'pr_title', value: '$.pull_request.title'],
-                [key: 'pr_labels', value: '$.pull_request.labels[*].name']
-            ],
-            causeString: 'Triggered by label addition: $label_name on PR #$pr_number',
-            token: 'pr-label-webhook-token',
-            printContributedVariables: true,
-            printPostContent: true,
-            regexpFilterText: '$action',
-            regexpFilterExpression: '^labeled$'
+        // Enable automatic checkout
+        timeout(time: 30, unit: 'MINUTES')
+        // Control build concurrency to limit Docker containers
+        throttleJobProperty(
+            categories: ['playwright-tests'],
+            throttleEnabled: true,
+            throttleOption: 'category',
+            maxConcurrentPerNode: 4,
+            maxConcurrentTotal: 4
         )
     }
     
+    // Use GitHub webhook instead of Generic Webhook Trigger
+    triggers {
+        githubPush()
+    }
+    
     stages {
-        stage('Wait for Label Changes to Settle') {
-            when {
-                expression { env.action == 'labeled' }
-            }
+        stage('Acquire Docker Container') {
             steps {
                 script {
-                    // Wait a bit to allow for multiple rapid label changes (unlabel + label)
-                    echo "=== API CHECK STAGE ==="
-                    echo "Action that triggered this build: ${env.action}"
-                    echo "Label '${env.label_name}' was added. Waiting 15 seconds for any simultaneous label changes..."
-                    sleep(15)
+                    echo "=== DOCKER CONTAINER ACQUISITION ==="
+                    echo "Jenkins is running in Docker, creating sibling container..."
                     
-                    // Fetch the current state of labels directly from GitHub API
-                    echo "Fetching current PR state from GitHub API..."
-                    
-                    try {
-                        withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
-                            def response = sh(
-                                script: """
-                                    curl -s -H "Authorization: token \${GITHUB_TOKEN}" \\
-                                    "https://api.github.com/repos/vaibhavnagare/cicdtest/pulls/${env.pr_number}"
-                                """,
-                                returnStdout: true
-                            ).trim()
-                            
-                            def jsonSlurper = new groovy.json.JsonSlurper()
-                            def prData = jsonSlurper.parseText(response)
-                            
-                            if (prData.labels) {
-                                def actualCurrentLabels = prData.labels.collect { it.name }
-                                echo "Actual current PR labels: ${actualCurrentLabels.join(', ')}"
+                    // Using Docker-beside-Docker approach
+                    docker.image('node:18-alpine').inside('-v /var/run/docker.sock:/var/run/docker.sock --user root') {
+                        stage('Setup Environment') {
+                            echo "=== CONTAINER SETUP ==="
+                            sh '''
+                                echo "Container ID: $(hostname)"
+                                echo "Setting up environment..."
                                 
-                                // Check if any current labels are product labels
+                                # Install essential tools
+                                apk add --no-cache git curl openjdk11-jre apache-ant
+                                
+                                # Verify installations
+                                node --version
+                                npm --version
+                                ant -version
+                                git --version
+                                
+                                echo "Environment ready for testing"
+                            '''
+                        }
+                        
+                        stage('Checkout and Parse Branch') {
+                            echo "=== CHECKOUT & PARSING STAGE ==="
+                            
+                            // Get branch name from Jenkins environment
+                            def branchName = env.BRANCH_NAME ?: env.GIT_BRANCH
+                            if (branchName && branchName.startsWith('origin/')) {
+                                branchName = branchName.replace('origin/', '')
+                            }
+                            
+                            echo "Target branch: ${branchName}"
+                            echo "Build trigger: GitHub webhook"
+                            echo "Container setup: Docker-beside-Docker"
+                            
+                            // Verify checkout
+                            sh '''
+                                echo "Current working directory:"
+                                pwd
+                                ls -la
+                                echo "Git status:"
+                                git status || echo "Git not initialized"
+                            '''
+                            
+                            // Store branch name for later use
+                            env.TARGET_BRANCH = branchName
+                            
+                            if (branchName) {
+                                // Parse branch name format
+                                def branchParts = branchName.split('-')
+                                echo "Branch parts: ${branchParts.join(', ')}"
+                                
+                                // Find product name in branch parts
                                 def productLabels = ['cx', 'surveys', 'communities', 'workforce', 'api', 'all']
-                                def actualProductLabels = actualCurrentLabels.findAll { label ->
-                                    productLabels.any { product -> label.toLowerCase().contains(product) }
+                                def foundProducts = []
+                                
+                                branchParts.each { part ->
+                                    def partLower = part.toLowerCase()
+                                    productLabels.each { product ->
+                                        if (partLower.contains(product)) {
+                                            foundProducts.add(product)
+                                        }
+                                    }
                                 }
                                 
-                                if (actualProductLabels) {
-                                    echo "Final product labels to test: ${actualProductLabels.join(', ')}"
-                                    echo "Setting EXECUTE_TESTS = true"
+                                foundProducts = foundProducts.unique()
+                                
+                                if (foundProducts) {
+                                    echo "Product(s) detected: ${foundProducts.join(', ')}"
                                     env.EXECUTE_TESTS = 'true'
-                                    env.PRODUCT_LABELS_TO_TEST = actualProductLabels.join(',')
+                                    env.PRODUCT_TO_TEST = foundProducts.join(',')
                                 } else {
-                                    echo "No product labels found in final state"
-                                    echo "Setting EXECUTE_TESTS = false"
+                                    echo "No product names found in branch name"
                                     env.EXECUTE_TESTS = 'false'
                                 }
                             } else {
-                                echo "No labels found on PR"
-                                echo "Setting EXECUTE_TESTS = false"
                                 env.EXECUTE_TESTS = 'false'
                             }
+                            
+                            echo "EXECUTE_TESTS = ${env.EXECUTE_TESTS}"
+                            echo "PRODUCT_TO_TEST = ${env.PRODUCT_TO_TEST}"
                         }
-                    } catch (Exception e) {
-                        echo "Could not fetch current PR state: ${e.message}"
-                        echo "Falling back to webhook data"
-                        echo "Setting EXECUTE_TESTS = false"
-                        env.EXECUTE_TESTS = 'false'
-                    }
-                    
-                    echo "=== FINAL DECISION ==="
-                    echo "EXECUTE_TESTS = ${env.EXECUTE_TESTS}"
-                    echo "PRODUCT_LABELS_TO_TEST = ${env.PRODUCT_LABELS_TO_TEST}"
-                    echo "======================"
-                }
-            }
-        }
-        
-        stage('Check PR and Labels') {
-            steps {
-                script {
-                    // Debug information - print all webhook variables
-                    echo "=== WEBHOOK DEBUG INFO ==="
-                    echo "Action: ${env.action}"
-                    echo "Label name: ${env.label_name}"
-                    echo "PR number: ${env.pr_number}"
-                    echo "PR title: ${env.pr_title}"
-                    echo "PR labels from webhook: ${env.pr_labels}"
-                    echo "=========================="
-                    
-                    echo "Label '${env.label_name}' was added to PR #${env.pr_number}"
-                    echo "PR Title: ${env.pr_title}"
-                    echo "This stage shows the webhook trigger info - actual testing decision is made after API check"
-                }
-            }
-        }
-        
-        stage('Process Product Labels') {
-            when {
-                expression { 
-                    // Only execute if EXECUTE_TESTS is set to true
-                    return env.EXECUTE_TESTS == 'true'
-                }
-            }
-            steps {
-                script {
-                    echo "=== EXECUTING TESTS ==="
-                    echo "EXECUTE_TESTS = ${env.EXECUTE_TESTS}"
-                    echo "Executing Playwright tests for current PR labels: ${env.PRODUCT_LABELS_TO_TEST}"
-                    
-                    // Split the product labels and execute tests for each
-                    def labelsToTest = env.PRODUCT_LABELS_TO_TEST.split(',').collect { it.trim() }
-                    
-                    labelsToTest.each { label ->
-                        echo "Processing label: ${label}"
                         
-                        // Product-specific Playwright test execution
-                        switch(label.toLowerCase()) {
-                            case ~/.*cx.*/:
-                                echo "Running CX Playwright tests..."
-                                sh '''
-                                    echo "Installing dependencies..."
-                                    # npm install
-                                    echo "Running CX-specific Playwright tests..."
-                                    # npx playwright test tests/cx/ --reporter=html
-                                    echo "CX tests completed"
-                                '''
-                                break
+                        stage('Execute Tests') {
+                            when {
+                                expression { return env.EXECUTE_TESTS == 'true' }
+                            }
+                            script {
+                                echo "=== EXECUTING TESTS ==="
+                                echo "Container ID: $(hostname)"
                                 
-                            case ~/.*surveys.*/:
-                                echo "Running Surveys Playwright tests..."
-                                sh '''
-                                    echo "Installing dependencies..."
-                                    # npm install
-                                    echo "Running Surveys-specific Playwright tests..."
-                                    # npx playwright test tests/surveys/ --reporter=html
-                                    echo "Surveys tests completed"
-                                '''
-                                break
+                                def productsToTest = env.PRODUCT_TO_TEST.split(',').collect { it.trim() }
                                 
-                            case ~/.*communities.*/:
-                                echo "Running Communities Playwright tests..."
-                                sh '''
-                                    echo "Installing dependencies..."
-                                    # npm install
-                                    echo "Running Communities-specific Playwright tests..."
-                                    # npx playwright test tests/communities/ --reporter=html
-                                    echo "Communities tests completed"
-                                '''
-                                break
-                                
-                            case ~/.*workforce.*/:
-                                echo "Running Workforce Playwright tests..."
-                                sh '''
-                                    echo "Installing dependencies..."
-                                    # npm install
-                                    echo "Running Workforce-specific Playwright tests..."
-                                    # npx playwright test tests/workforce/ --reporter=html
-                                    echo "Workforce tests completed"
-                                '''
-                                break
-                                
-                            case ~/.*api.*/:
-                                echo "Running API Playwright tests..."
-                                sh '''
-                                    echo "Installing dependencies..."
-                                    # npm install
-                                    echo "Running API-specific Playwright tests..."
-                                    # npx playwright test tests/api/ --reporter=html
-                                    echo "API tests completed"
-                                '''
-                                break
-                                
-                            case ~/.*all.*/:
-                                echo "Running ALL Playwright tests..."
-                                sh '''
-                                    echo "Installing dependencies..."
-                                    # npm install
-                                    echo "Running ALL Playwright tests..."
-                                    # npx playwright test --reporter=html
-                                    echo "All tests completed"
-                                '''
-                                break
-                                
-                            default:
-                                echo "Unknown product label: ${label}"
-                                echo "Skipping test execution for this label"
+                                productsToTest.each { product ->
+                                    echo "Processing product: ${product}"
+                                    
+                                    switch(product.toLowerCase()) {
+                                        case 'cx':
+                                            sh 'ant playwright.test.cx'
+                                            break
+                                        case 'surveys':
+                                            sh 'ant playwright.test.surveys'
+                                            break
+                                        case 'communities':
+                                            sh 'ant playwright.test.communities'
+                                            break
+                                        case 'workforce':
+                                            sh 'ant playwright.test.workforce'
+                                            break
+                                        case 'api':
+                                            sh 'ant playwright.test.api'
+                                            break
+                                        case 'all':
+                                            sh 'ant playwright.test'
+                                            break
+                                        default:
+                                            echo "Unknown product: ${product}"
+                                    }
+                                }
+                            }
                         }
                     }
-                }
-            }
-        }
-        stage('Publish Test Results') {
-            when {
-                expression { 
-                    // Only publish results if tests were executed
-                    return env.EXECUTE_TESTS == 'true'
-                }
-            }
-            steps {
-                script {
-                    echo "Publishing Playwright test results..."
-                    // Uncomment these when you have actual Playwright tests
-                    // publishHTML([
-                    //     allowMissing: false,
-                    //     alwaysLinkToLastBuild: false,
-                    //     keepAll: true,
-                    //     reportDir: 'playwright-report',
-                    //     reportFiles: 'index.html',
-                    //     reportName: 'Playwright Test Report'
-                    // ])
-                    
-                    // junit 'test-results/*.xml' // If you generate JUnit XML reports
-                    echo "Test results would be published here"
                 }
             }
         }
