@@ -69,7 +69,7 @@ pipeline {
                                 echo "Git status:"
                                 git status || echo "Git not initialized"
                             '''
-                            
+                        
                             // Store branch name for later use
                             env.TARGET_BRANCH = branchName
                             
