@@ -14,7 +14,7 @@ pipeline {
             maxConcurrentTotal: 4
         )
     }
-    
+
     // Use GitHub webhook instead of Generic Webhook Trigger
     triggers {
         githubPush()
