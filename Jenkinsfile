@@ -13,7 +13,6 @@ pipeline {
             maxConcurrentTotal: 1
         )
     }
-
     
     // Use GitHub webhook
     triggers {
