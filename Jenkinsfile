@@ -15,6 +15,7 @@ pipeline {
         )
     }
 
+    
     // Use GitHub webhook instead of Generic Webhook Trigger
     triggers {
         githubPush()
