@@ -115,7 +115,7 @@ pipeline {
                             }
                             script {
                                 echo "=== EXECUTING TESTS ==="
-                                echo "Container ID: $(hostname)"
+                                sh 'echo "Container ID: \\$(hostname)"'
                                 
                                 def productsToTest = env.PRODUCT_TO_TEST.split(',').collect { it.trim() }
                                 
