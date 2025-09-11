@@ -14,7 +14,6 @@ pipeline {
             maxConcurrentTotal: 4
         )
     }
-
     
     // Use GitHub webhook instead of Generic Webhook Trigger
     triggers {
@@ -22,32 +21,51 @@ pipeline {
     }
     
     stages {
-        stage('Acquire Docker Container') {
+        stage('Setup Environment') {
             steps {
                 script {
-                    echo "=== DOCKER CONTAINER ACQUISITION ==="
-                    echo "Jenkins is running in Docker, creating sibling container..."
+                    echo "=== ENVIRONMENT SETUP ==="
+                    echo "Preparing Docker-enabled Jenkins environment..."
                     
-                    // Using Docker-beside-Docker approach
+                    // Verify Docker availability
+                    sh '''
+                        echo "=== CHECKING ENVIRONMENT ==="
+                        echo "Working directory: $(pwd)"
+                        echo "Docker version:"
+                        docker --version || echo "Docker not found"
+                        echo "Available tools:"
+                        which java && java -version || echo "Java not found"
+                        which ant && ant -version || echo "Ant not found"
+                        echo "========================="
+                    '''
+                }
+            }
+        }
+        
+        stage('Execute in Docker Container') {
+            steps {
+                script {
+                    echo "=== DOCKER CONTAINER EXECUTION ==="
+                    
+                    // Using Docker-beside-Docker approach with your Docker-enabled Jenkins
                     docker.image('node:18-alpine').inside('-v /var/run/docker.sock:/var/run/docker.sock --user root') {
-                        stage('Setup Environment') {
+                        
+                        // Install required tools in Alpine container
+                        sh '''
                             echo "=== CONTAINER SETUP ==="
-                            sh '''
-                                echo "Container ID: $(hostname)"
-                                echo "Setting up environment..."
-                                
-                                # Install essential tools
-                                apk add --no-cache git curl openjdk11-jre apache-ant
-                                
-                                # Verify installations
-                                node --version
-                                npm --version
-                                ant -version
-                                git --version
-                                
-                                echo "Environment ready for testing"
-                            '''
-                        }
+                            echo "Container ID: $(hostname)"
+                            
+                            # Install essential tools
+                            apk add --no-cache git curl openjdk11-jre apache-ant
+                            
+                            # Verify installations
+                            node --version
+                            npm --version
+                            ant -version
+                            git --version
+                            
+                            echo "Environment ready for testing"
+                        '''
                         
                         stage('Checkout and Parse Branch') {
                             echo "=== CHECKOUT & PARSING STAGE ==="
@@ -116,7 +134,6 @@ pipeline {
                             }
                             script {
                                 echo "=== EXECUTING TESTS ==="
-                                sh 'echo "Container ID: \\$(hostname)"'
                                 
                                 def productsToTest = env.PRODUCT_TO_TEST.split(',').collect { it.trim() }
                                 
@@ -150,6 +167,17 @@ pipeline {
                         }
                     }
                 }
+            }
+        }
+    }
+    
+    post {
+        always {
+            script {
+                echo "=== CLEANUP ==="
+                echo "Docker container cleanup will be handled automatically"
+                // Publish test results if available
+                // publishHTML([...]) // Uncomment when you have test reports
             }
         }
     }
