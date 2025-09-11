@@ -3,7 +3,6 @@ pipeline {
     
     // Standard pipeline options
     options {
-        timeout(time: 30, unit: 'MINUTES')
         // Prevent concurrent builds on same branch
         disableConcurrentBuilds()
     }
