@@ -4,14 +4,8 @@ pipeline {
     // Standard pipeline options
     options {
         timeout(time: 30, unit: 'MINUTES')
-        // Control build concurrency - Only 1 Playwright test at a time per instance
-        throttleJobProperty(
-            categories: ['playwright-tests'],
-            throttleEnabled: true,
-            throttleOption: 'category',
-            maxConcurrentPerNode: 1,
-            maxConcurrentTotal: 1
-        )
+        // Prevent concurrent builds on same branch
+        disableConcurrentBuilds()
     }
     
     // Use GitHub webhook
