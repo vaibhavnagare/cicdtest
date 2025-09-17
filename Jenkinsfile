@@ -4,7 +4,7 @@ pipeline {
     // Standard pipeline options
     options {
         // Prevents Jenkins from auto-checking out the branch
-         skipDefaultCheckout()   
+         skipDefaultCheckout(true)  
         // Prevent concurrent builds on same branch
         disableConcurrentBuilds()
     }
