@@ -7,16 +7,15 @@ on:
 jobs:
   trigger-jenkins:
     runs-on: ubuntu-latest
-    # Only trigger for specific labels
-    if: contains(fromJSON('["deploy", "build", "test", "staging"]'), github.event.label.name)
-    
+    if: contains(fromJSON('["cx", "bug", "test", "staging"]'), github.event.label.name)
+
     steps:
       - name: Trigger Jenkins Job
         run: |
           echo "Triggering Jenkins for label: ${{ github.event.label.name }}"
-          curl -X POST \
+          curl -v -X POST \
             -u ${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_TOKEN }} \
-            "${{ secrets.JENKINS_URL }}/job/GitHub%20Actions/buildWithParameters" \
+            "${{ secrets.JENKINS_URL }}/job/GitHub%20Actions/buildWithParameters?token=github-pr-trigger" \
             -d "PR_NUMBER=${{ github.event.pull_request.number }}" \
             -d "LABEL=${{ github.event.label.name }}" \
             -d "REPO=${{ github.repository }}" \
