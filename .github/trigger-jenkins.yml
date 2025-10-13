@@ -1,0 +1,23 @@
+name: Trigger Jenkins on Specific PR Labels
+
+on:
+  pull_request:
+    types: [labeled]
+
+jobs:
+  trigger-jenkins:
+    runs-on: ubuntu-latest
+    # Only trigger for specific labels
+    if: contains(fromJSON('["deploy", "build", "test", "staging"]'), github.event.label.name)
+
+    steps:
+      - name: Trigger Jenkins Job
+        run: |
+          echo "Triggering Jenkins for label: ${{ github.event.label.name }}"
+          curl -X POST \
+            -u ${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_TOKEN }} \
+            "${{ secrets.JENKINS_URL }}/job/your-job-name/buildWithParameters" \
+            -d "PR_NUMBER=${{ github.event.pull_request.number }}" \
+            -d "LABEL=${{ github.event.label.name }}" \
+            -d "REPO=${{ github.repository }}" \
+            -d "BRANCH=${{ github.event.pull_request.head.ref }}"
