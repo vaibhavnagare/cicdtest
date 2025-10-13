@@ -24,7 +24,7 @@ jobs:
           echo "Triggering Jenkins..."
           curl -v --fail \
             -H "ngrok-skip-browser-warning: true" \
-            -u "vaibhavnagare" :${{ secrets.JENKINS_TOKEN }} \
+            -u "vaibhavnagare : 11e769bf16d3a3ff5d2a14b8d73ff92da3" \
             "http://localhost:8080/job/GitHub%20Actions/job/GitHub%20Actions/buildWithParameters?token=github-pr-trigger" \
             -d "PR_NUMBER=${{ github.event.pull_request.number }}" \
             -d "LABEL=${{ github.event.label.name }}" \
