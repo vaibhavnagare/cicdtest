@@ -7,7 +7,7 @@ on:
 jobs:
   trigger-jenkins:
     runs-on: ubuntu-latest
-    if: contains(fromJSON('["cx", "bug", "test", "staging"]'), github.event.label.name)
+    if: contains(fromJSON('["CX", "bug", "test", "staging"]'), github.event.label.name)
 
     steps:
       - name: Trigger Jenkins Job
