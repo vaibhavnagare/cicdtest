@@ -10,10 +10,20 @@ jobs:
     if: contains(fromJSON('["CX", "bug", "test", "staging"]'), github.event.label.name)
 
     steps:
+      - name: Debug Information (Safe)
+        run: |
+          echo "Jenkins URL: ${{ secrets.JENKINS_URL }}"
+          echo "Jenkins User: ${{ secrets.JENKINS_USER }}"
+          echo "Label: ${{ github.event.label.name }}"
+          echo "PR Number: ${{ github.event.pull_request.number }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Complete URL: ${{ secrets.JENKINS_URL }}/job/GitHub%20Actions/buildWithParameters?token=github-pr-trigger"
+
       - name: Trigger Jenkins Job
         run: |
-          echo "Triggering Jenkins for label: ${{ github.event.label.name }}"
-          curl -v -X POST \
+          echo "Triggering Jenkins..."
+          curl -v --fail \
+            -H "ngrok-skip-browser-warning: true" \
             -u ${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_TOKEN }} \
             "${{ secrets.JENKINS_URL }}/job/GitHub%20Actions/buildWithParameters?token=github-pr-trigger" \
             -d "PR_NUMBER=${{ github.event.pull_request.number }}" \
